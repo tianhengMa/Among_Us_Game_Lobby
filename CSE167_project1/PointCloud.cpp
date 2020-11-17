@@ -5,7 +5,7 @@
 #include <math.h>
 
 
-PointCloud::PointCloud(std::string objFilename, GLfloat pointSize, Materials * in_materials, PointLight * in_pointLight) : pointSize(pointSize)
+PointCloud::PointCloud(std::string objFilename, GLfloat pointSize) : pointSize(pointSize)
 {
 	/* 
 	 * TODO: Section 2: Currently, all the points are hard coded below. 
@@ -13,10 +13,10 @@ PointCloud::PointCloud(std::string objFilename, GLfloat pointSize, Materials * i
 	 */
 
     // Initialize materials
-    materials = in_materials;
+    //materials = in_materials;
     
     // Initialize pointlight
-    pointLight = in_pointLight;
+    //pointLight = in_pointLight;
     
     // Intialize model switch to be 1 (1: normal, 0: phong)
     modelSwitch = 1;
@@ -134,7 +134,7 @@ PointCloud::PointCloud(std::string objFilename, GLfloat pointSize, Materials * i
     model = glm::scale(model, glm::vec3(10 /max_dist));
 
 	// Set the color. 
-    //color
+    color = glm::vec3(1, 0, 0);
 
 	// Generate a Vertex Array (VAO) and Vertex Buffer Object (VBO)
 	glGenVertexArrays(1, &VAO);
@@ -219,7 +219,7 @@ void PointCloud::draw(const glm::mat4& view, const glm::mat4& projection, GLuint
 void PointCloud::update()
 {
 	// Spin the cube by 1 degree
-	//spin(0.1f);
+	spin(0.1f);
 }
 
 void PointCloud::updatePointSize(GLfloat size) 

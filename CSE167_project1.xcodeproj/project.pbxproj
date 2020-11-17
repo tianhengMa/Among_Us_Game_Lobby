@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0C17DB25255E505200B2AD54 /* Sphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C17DB23255E505200B2AD54 /* Sphere.cpp */; };
 		0C215D4A252B859200A7F5B9 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C215D49252B859200A7F5B9 /* main.cpp */; };
 		0C215D5E252B878600A7F5B9 /* PointCloud.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C215D52252B878600A7F5B9 /* PointCloud.cpp */; };
 		0C215D5F252B878600A7F5B9 /* Cube.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C215D5A252B878600A7F5B9 /* Cube.cpp */; };
@@ -47,6 +48,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0C17DB23255E505200B2AD54 /* Sphere.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Sphere.cpp; sourceTree = "<group>"; };
+		0C17DB24255E505200B2AD54 /* Sphere.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Sphere.h; sourceTree = "<group>"; };
 		0C215D46252B859200A7F5B9 /* CSE167_project1 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = CSE167_project1; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C215D49252B859200A7F5B9 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		0C215D51252B878600A7F5B9 /* Object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Object.h; sourceTree = "<group>"; };
@@ -148,6 +151,8 @@
 				0CFF87A6255392C4001FD09D /* Materials.cpp */,
 				0CFF87A9255513A2001FD09D /* PointLight.cpp */,
 				0CFF87AA255513A2001FD09D /* PointLight.h */,
+				0C17DB23255E505200B2AD54 /* Sphere.cpp */,
+				0C17DB24255E505200B2AD54 /* Sphere.h */,
 			);
 			path = CSE167_project1;
 			sourceTree = "<group>";
@@ -262,6 +267,7 @@
 			files = (
 				0C215D61252B878600A7F5B9 /* shader.cpp in Sources */,
 				0C215D5F252B878600A7F5B9 /* Cube.cpp in Sources */,
+				0C17DB25255E505200B2AD54 /* Sphere.cpp in Sources */,
 				0CFF87A8255392C4001FD09D /* Materials.cpp in Sources */,
 				0C215D5E252B878600A7F5B9 /* PointCloud.cpp in Sources */,
 				0CFF87AB255513A5001FD09D /* PointLight.cpp in Sources */,

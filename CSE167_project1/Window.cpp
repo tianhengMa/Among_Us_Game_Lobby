@@ -1,10 +1,5 @@
 #include "Window.h"
-#include <limits>
-#include <stdio.h>
-#include <float.h>
-#include <math.h>
-#include <glm/gtx/rotate_vector.hpp>
-#include <glm/gtx/string_cast.hpp>
+using namespace std;
 
 // Window Properties
 int Window::width;
@@ -14,232 +9,174 @@ const char* Window::windowTitle = "GLFW Starter Project";
 // Objects to Render
 Cube * Window::cube;
 PointCloud * Window::cubePoints;
-PointCloud * Window::bunnyPoints;
-PointCloud * Window::sandalPoints;
-PointCloud * Window::bearPoints;
-PointCloud * Window::lightSphere;
-
 Object* currObj;
+Sphere* Window::discoBall;
 
-// scale factor in scaling triangles
-double Window::scaleFactor;
-float Window::lightScale;
+// Camera Matrices
+// Projection matrix:
+glm::mat4 Window::projection;
 
-// Light position mode, initialize to be 1
-int Window::lightPosMode = 1;
-
-// static point light
-PointLight * Window::pointLight;
-
-// Cusor Position
+// Mouse position for track ball
 bool Window::mousePressed;
 double Window::startPosX;
 double Window::startPosY;
 
-// Camera Matrices 
-// Projection matrix:
-glm::mat4 Window::projection; 
-
 // View Matrix:
-glm::vec3 Window::eyePos(0, 0, 20);			// Camera position.
-glm::vec3 Window::lookAtPoint(0, 0, 0);		// The point we are looking at.
-glm::vec3 Window::upVector(0, 1, 0);		// The up direction of the camera.
+glm::vec3 Window::eyePos(0, 0, 20);            // Camera position.
+glm::vec3 Window::lookAtPoint(0, 0, 0);        // The point we are looking at.
+glm::vec3 Window::upVector(0, 1, 0);        // The up direction of the camera.
 glm::mat4 Window::view = glm::lookAt(Window::eyePos, Window::lookAtPoint, Window::upVector);
 
 // Shader Program ID
-GLuint Window::shaderProgram; 
-
-
+GLuint Window::discoBallShader;
+GLuint Window::skyboxShader;
 
 bool Window::initializeProgram() {
-	// Create a shader program with a vertex shader and a fragment shader.
-	shaderProgram = LoadShaders("shaders/shader.vert", "shaders/shader.frag");
+    // Create a shader program with a vertex shader and a fragment shader.
+    skyboxShader = LoadShaders("shaders/skybox.vert", "shaders/skybox.frag");
+    discoBallShader = LoadShaders("shaders/shader.vert", "shaders/shader.frag");
+    
+    // Check the shader program.
+    if (!skyboxShader)
+    {
+        std::cerr << "Failed to initialize shader program" << std::endl;
+        return false;
+    }
+    
+    if (!discoBallShader)
+    {
+        std::cerr << "Failed to initialize shader program" << std::endl;
+        return false;
+    }
 
-	// Check the shader program.
-	if (!shaderProgram)
-	{
-		std::cerr << "Failed to initialize shader program" << std::endl;
-		return false;
-	}
-
-	return true;
+    return true;
 }
 
 bool Window::initializeObjects()
 {
-	// Create a cube of size 5.
-	cube = new Cube(5.0f);
+    // Create a cube of size 5.
+    cube = new Cube(5.0f);
+    discoBall = new Sphere();
     
-    // Initialize the point light
-    glm::vec3 lightPos = glm::vec3(4,4,0);
-    glm::vec3 color = glm::vec3(0.7, 0.7, 0.2);
-    glm::vec3 atten = glm::vec3(0.1);
-    pointLight = new PointLight(lightPos, color, atten);
+    // Create a point cloud consisting of cube vertices.
+    //cubePoints = new PointCloud("foo", 100);
     
-    // Set the material for emerald and bunny
-    glm::vec3 ambient = glm::vec3(0.0215, 0.1745, 0.0215);
-    glm::vec3 diffuse = glm::vec3(0.50754, 0.50754, 0.50754);
-    glm::vec3 specular = glm::vec3(0.633, 0.727811, 0.633);
-    float shininess = 1.5;
-    Materials * emerald = new Materials(ambient,diffuse,specular,shininess);
-    
-	// Create a point cloud consisting of cube vertices.
-	cubePoints = new PointCloud("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/bunny.obj", 1, emerald, pointLight);
+    // Set cube to be the first to display
+    currObj = cube;
 
-	// Set cube to be the first to display
-	currObj = cube;
-    
-    bunnyPoints = new PointCloud("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/bunny.obj",1,emerald, pointLight);
-    
-    // Set the material for sandal
-    ambient = glm::vec3(0.329412, 0.223529, 0.027451);
-    diffuse = glm::vec3(0.780392, 0.568627, 0.113725);
-    specular = glm::vec3(0);
-    shininess = 0.21794872;
-    Materials * brass = new Materials(ambient,diffuse,specular,shininess);
-    sandalPoints = new PointCloud("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/SandalF20.obj",1,brass, pointLight);
-    
-    // Set the material for bear
-    ambient = glm::vec3(0.24725, 0.1995, 0.0745);
-    diffuse = glm::vec3(0);
-    specular = glm::vec3(0.992157, 0.941176, 0.807843);
-    shininess = 0.8;
-    Materials * gold = new Materials(ambient,diffuse,specular,shininess);
-    bearPoints = new PointCloud("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/bear.obj",1, gold, pointLight);
-    
-    // Initialize light sphere
-    glm::vec3 translation = pointLight->getPos();
-    glm::vec3 lightColor = pointLight->getColor();
-    
-    ambient = lightColor;
-    diffuse = glm::vec3(0);
-    specular = glm::vec3(0);
-    Materials * lightMaterial = new Materials(ambient,diffuse,specular,shininess);
-    lightSphere = new PointCloud("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/sphere.obj",1, lightMaterial, pointLight);
-    
-    // Adjust the light sphere
-    lightSphere->scale(0.1);
-    lightSphere->translate(translation);
-    lightSphere->toggleModelSwitch();
-    
-    // Initialize scale factor
-    scaleFactor = 1.0;
-    lightScale = 1.0;
-    ((PointCloud*)currObj)->scale(1.0);
-    
-	return true;
+    return true;
 }
 
 void Window::cleanUp()
 {
-	// Deallcoate the objects.
-	delete cube;
-	delete cubePoints;
+    // Deallcoate the objects.
+    delete cube;
+    delete cubePoints;
 
-	// Delete the shader program.
-	glDeleteProgram(shaderProgram);
+    // Delete the shader program.
+    glDeleteProgram(skyboxShader);
+    glDeleteProgram(discoBallShader);
 }
 
 GLFWwindow* Window::createWindow(int width, int height)
 {
-	// Initialize GLFW.
-	if (!glfwInit())
-	{
-		std::cerr << "Failed to initialize GLFW" << std::endl;
-		return NULL;
-	}
+    // Initialize GLFW.
+    if (!glfwInit())
+    {
+        std::cerr << "Failed to initialize GLFW" << std::endl;
+        return NULL;
+    }
 
-	// 4x antialiasing.
-	glfwWindowHint(GLFW_SAMPLES, 4);
+    // 4x antialiasing.
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
-#ifdef __APPLE__ 
-	// Apple implements its own version of OpenGL and requires special treatments
-	// to make it uses modern OpenGL.
+#ifdef __APPLE__
+    // Apple implements its own version of OpenGL and requires special treatments
+    // to make it uses modern OpenGL.
 
-	// Ensure that minimum OpenGL version is 3.3
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	// Enable forward compatibility and allow a modern OpenGL context
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    // Ensure that minimum OpenGL version is 3.3
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    // Enable forward compatibility and allow a modern OpenGL context
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-	// Create the GLFW window.
-	GLFWwindow* window = glfwCreateWindow(width, height, windowTitle, NULL, NULL);
+    // Create the GLFW window.
+    GLFWwindow* window = glfwCreateWindow(width, height, windowTitle, NULL, NULL);
 
-	// Check if the window could not be created.
-	if (!window)
-	{
-		std::cerr << "Failed to open GLFW window." << std::endl;
-		glfwTerminate();
-		return NULL;
-	}
+    // Check if the window could not be created.
+    if (!window)
+    {
+        std::cerr << "Failed to open GLFW window." << std::endl;
+        glfwTerminate();
+        return NULL;
+    }
 
-	// Make the context of the window.
-	glfwMakeContextCurrent(window);
+    // Make the context of the window.
+    glfwMakeContextCurrent(window);
 
 #ifndef __APPLE__
-	// On Windows and Linux, we need GLEW to provide modern OpenGL functionality.
+    // On Windows and Linux, we need GLEW to provide modern OpenGL functionality.
 
-	// Initialize GLEW.
-	if (glewInit())
-	{
-		std::cerr << "Failed to initialize GLEW" << std::endl;
-		return NULL;
-	}
+    // Initialize GLEW.
+    if (glewInit())
+    {
+        std::cerr << "Failed to initialize GLEW" << std::endl;
+        return NULL;
+    }
 #endif
 
-	// Set swap interval to 1.
-	glfwSwapInterval(0);
+    // Set swap interval to 1.
+    glfwSwapInterval(0);
 
-	// Call the resize callback to make sure things get drawn immediately.
-	Window::resizeCallback(window, width, height);
+    // Call the resize callback to make sure things get drawn immediately.
+    Window::resizeCallback(window, width, height);
 
-	return window;
+    return window;
 }
 
 void Window::resizeCallback(GLFWwindow* window, int width, int height)
 {
 #ifdef __APPLE__
-	// In case your Mac has a retina display.
-	glfwGetFramebufferSize(window, &width, &height); 
+    // In case your Mac has a retina display.
+    glfwGetFramebufferSize(window, &width, &height);
 #endif
-	Window::width = width;
-	Window::height = height;
-	// Set the viewport size.
-	glViewport(0, 0, width, height);
+    Window::width = width;
+    Window::height = height;
+    // Set the viewport size.
+    glViewport(0, 0, width, height);
 
-	// Set the projection matrix.
-	Window::projection = glm::perspective(glm::radians(60.0), 
-								double(width) / (double)height, 1.0, 1000.0);
+    // Set the projection matrix.
+    Window::projection = glm::perspective(glm::radians(60.0),
+                                double(width) / (double)height, 1.0, 1000.0);
 }
 
 void Window::idleCallback()
 {
-	// Perform any necessary updates here 
-	currObj->update();
+    // Perform any necessary updates here
+    currObj->update();
 }
 
 void Window::displayCallback(GLFWwindow* window)
-{	
-	// Clear the color and depth buffers
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+{
+    // Clear the color and depth buffers
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// Render the objects
-	currObj->draw(view, projection, shaderProgram);
+    // Render the objects
+    currObj->draw(view, projection, skyboxShader);
     
-    // Render light Sphere with the right scale and translation
-    lightSphere->draw(view, projection, shaderProgram);
+    unsigned int skyboxTexture = ((Cube*)currObj)->getSkyboxTexture();
+    discoBall->draw(view, projection, discoBallShader, skyboxTexture);
 
-	// Gets events, including input such as keyboard and mouse or window resizing
-	glfwPollEvents();
+    // Gets events, including input such as keyboard and mouse or window resizing
+    glfwPollEvents();
 
-	// Swap buffers.
-	glfwSwapBuffers(window);
+    // Swap buffers.
+    glfwSwapBuffers(window);
 }
 
-void Window::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
-{
+void Window::mouse_button_callback(GLFWwindow* window, int button, int action, int mods){
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
         mousePressed = true;
         glfwGetCursorPos(window, &startPosX, &startPosY);
@@ -248,10 +185,9 @@ void Window::mouse_button_callback(GLFWwindow* window, int button, int action, i
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE){
         mousePressed = false;
     }
-        
 }
-void Window::cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
-{
+
+void Window::cursor_position_callback(GLFWwindow* window, double xpos, double ypos){
     if (!mousePressed){
         return;
     }
@@ -274,29 +210,11 @@ void Window::cursor_position_callback(GLFWwindow* window, double xpos, double yp
     glm::vec3 rotAxis = glm::cross(startPoint, nextPoint);
     float rotAngle = velocity * 1;
     
-    glm::vec3 pos = pointLight->getPos();
-    glm::vec3 new_pos = glm::rotate(pos, rotAngle, rotAxis);
-    
-    if (lightPosMode == 1){
-        ((PointCloud*)currObj)->ballRotate(rotAxis, rotAngle);
-    }
-    else if (lightPosMode == 2){
-        ((PointCloud*)lightSphere)->ballRotate(rotAxis, rotAngle);
-        pointLight->setPos(new_pos);
-    }
-    else if (lightPosMode == 3){
-        ((PointCloud*)currObj)->ballRotate(rotAxis, rotAngle);
-        ((PointCloud*)lightSphere)->ballRotate(rotAxis, rotAngle);
-        pointLight->setPos(new_pos);
-    }
-    //((PointCloud*)currObj)->ballRotate(rotAxis, rotAngle);
-    //((PointCloud*)lightSphere)->ballRotate(rotAxis, rotAngle);
+    ((Cube*)currObj)->ballRotate(rotAxis, -rotAngle);
     
     startPosX = xpos;
     startPosY = ypos;
-    
 }
-
 
 glm::vec3 Window::trackBallMapping(double pointX, double pointY){
     glm::vec3 vec;
@@ -314,125 +232,33 @@ glm::vec3 Window::trackBallMapping(double pointX, double pointY){
     return vec;
 }
 
+
 void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	/*
-	 * TODO: Modify below to add your key callbacks.
-	 */
-	
-	// Check for a key press.
-	if (action == GLFW_PRESS)
-	{
-		switch (key){
-            case GLFW_KEY_ESCAPE:
-                // Close the window. This causes the program to also terminate.
-                glfwSetWindowShouldClose(window, GL_TRUE);
-                break;
+    /*
+     * TODO: Modify below to add your key callbacks.
+     */
 
-            // Light position mode 1
-            case GLFW_KEY_1:
-                lightPosMode = 1;
-                break;
-            // Light position mode 2
-            case GLFW_KEY_2:
-                lightPosMode = 2;
-                break;
-            // Light position mode 3
-            case GLFW_KEY_3:
-                lightPosMode = 3;
-                break;
-                    
-            // switch between bunny points, sandal points, and bear points
-            case GLFW_KEY_F1:{
-                currObj = bunnyPoints;
-                scaleFactor = 1;
-                ((PointCloud*)currObj)->scale(1.0);
-                break;
-            }
-            case GLFW_KEY_F2:{
-                currObj = sandalPoints;
-                scaleFactor = 1;
-                ((PointCloud*)currObj)->scale(1.0);
-                break;
-            }
-            case GLFW_KEY_F3:{
-                currObj = bearPoints;
-                scaleFactor = 1;
-                ((PointCloud*)currObj)->scale(1.0);
-                break;
-            }
-            // adjust point size
-            case GLFW_KEY_S:{
-                ((PointCloud*)currObj)->decreasePointSize();
-                break;
-            }
-                
-            case GLFW_KEY_L:{
-                ((PointCloud*)currObj)->increasePointSize();
-                break;
-            }
-                
-            case GLFW_KEY_UP :{
-                if (lightPosMode == 1){
-                    //scaleFactor = scaleFactor + 0.1;
-                    ((PointCloud*)currObj)->scale(1.1);
-                } else if (lightPosMode == 2){
-                    glm::vec3 curr_lightPos = pointLight->getPos();
-                    // Move light Sphere to 1.05 times of current position
-                    lightSphere->translate(-1.0f*curr_lightPos);
-                    lightSphere->translate(1.05f* curr_lightPos);
-                    // Move light to 1.05 times of current position
-                    pointLight->setPos(1.05f* curr_lightPos);
-                } else {
-                    ((PointCloud*)currObj)->scale(1.1);
-                    glm::vec3 curr_lightPos = pointLight->getPos();
-                    // Move light Sphere to 1.05 times of current position
-                    lightSphere->translate(-1.0f*curr_lightPos);
-                    lightSphere->translate(1.05f* curr_lightPos);
-                    // Move light to 1.05 times of current position
-                    pointLight->setPos(1.05f* curr_lightPos);
-                }
-                
-                break;
-            }
-                
-            case GLFW_KEY_DOWN :{
-                if (lightPosMode == 1){
-                    if (scaleFactor > 0){
-                        //scaleFactor = scaleFactor - 0.1;
-                        ((PointCloud*)currObj)->scale(0.9);
-                    }
-                } else if (lightPosMode == 2){
-                    if (lightScale > 0){
-                        glm::vec3 curr_lightPos = pointLight->getPos();
-                        // Move light Sphere to 0.95 times of current position
-                        lightSphere->translate(-1.0f*curr_lightPos);
-                        lightSphere->translate(0.95f* curr_lightPos);
-                        // Move light to 0.95 times of current position
-                        pointLight->setPos(0.95f* curr_lightPos);
-                    }
-                } else{
-                    if (lightPosMode > 0 && scaleFactor > 0){
-                        ((PointCloud*)currObj)->scale(0.9);
-                        glm::vec3 curr_lightPos = pointLight->getPos();
-                        // Move light Sphere to 0.95 times of current position
-                        lightSphere->translate(-1.0f*curr_lightPos);
-                        lightSphere->translate(0.95f* curr_lightPos);
-                        // Move light to 0.95 times of current position
-                        pointLight->setPos(0.95f* curr_lightPos);
-                    }
-                }
-                break;
-            }
-                
-            case GLFW_KEY_N: {
-                ((PointCloud*)currObj)->toggleModelSwitch();
-                break;
-            }
-                
-            default:{
-                break;
-            }
-		}
-	}
+    // Check for a key press.
+    if (action == GLFW_PRESS)
+    {
+        switch (key)
+        {
+        case GLFW_KEY_ESCAPE:
+            // Close the window. This causes the program to also terminate.
+            glfwSetWindowShouldClose(window, GL_TRUE);
+            break;
+
+        // switch between the cube and the cube pointCloud
+        case GLFW_KEY_1:
+            currObj = cube;
+            break;
+        case GLFW_KEY_2:
+            currObj = cubePoints;
+            break;
+
+        default:
+            break;
+        }
+    }
 }

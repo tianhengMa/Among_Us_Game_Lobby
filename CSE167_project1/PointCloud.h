@@ -34,7 +34,8 @@ private:
 	GLfloat pointSize;
 
 public:
-    PointCloud(std::string objFilename, GLfloat pointSize, Materials* in_materials, PointLight * in_pointLight);
+    //PointCloud(std::string objFilename, GLfloat pointSize, Materials* in_materials, PointLight * in_pointLight);
+    PointCloud(std::string objFilename, GLfloat pointSize);
 	~PointCloud();
 	
 	void draw(const glm::mat4& view, const glm::mat4& projection, GLuint shader);
