@@ -15,6 +15,8 @@
 		0C215D61252B878600A7F5B9 /* shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C215D5D252B878600A7F5B9 /* shader.cpp */; };
 		0C215D82252B8A4900A7F5B9 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0C215D64252B88ED00A7F5B9 /* OpenGL.framework */; };
 		0C215D83252B8A4900A7F5B9 /* OpenGL.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0C215D64252B88ED00A7F5B9 /* OpenGL.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		0C343EBE25662E210094B01A /* Transform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C343EBC25662E200094B01A /* Transform.cpp */; };
+		0C343EC1256631100094B01A /* Geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C343EBF256631100094B01A /* Geometry.cpp */; };
 		0CBAC5DF252B9D4F004CFA27 /* shaders in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0CBAC5DE252B9D49004CFA27 /* shaders */; };
 		0CFF87A2254CB823001FD09D /* libglfw.3.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CFF87A1254CB823001FD09D /* libglfw.3.3.dylib */; };
 		0CFF87A3254CB823001FD09D /* libglfw.3.3.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0CFF87A1254CB823001FD09D /* libglfw.3.3.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -88,6 +90,12 @@
 		0C215D7E252B89A900A7F5B9 /* libc.so */ = {isa = PBXFileReference; lastKnownFileType = file; path = libc.so; sourceTree = "<group>"; };
 		0C215D7F252B89A900A7F5B9 /* libdl.so */ = {isa = PBXFileReference; lastKnownFileType = file; path = libdl.so; sourceTree = "<group>"; };
 		0C215D80252B8A0E00A7F5B9 /* libglfw.3.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libglfw.3.3.dylib; path = ../../../../../../usr/local/Cellar/glfw/3.3.2/lib/libglfw.3.3.dylib; sourceTree = "<group>"; };
+		0C343EBA2564B12D0094B01A /* Node.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Node.h; sourceTree = "<group>"; };
+		0C343EBC25662E200094B01A /* Transform.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Transform.cpp; sourceTree = "<group>"; };
+		0C343EBD25662E200094B01A /* Transform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Transform.h; sourceTree = "<group>"; };
+		0C343EBF256631100094B01A /* Geometry.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Geometry.cpp; sourceTree = "<group>"; };
+		0C343EC0256631100094B01A /* Geometry.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Geometry.h; sourceTree = "<group>"; };
+		0C343EC62566F6960094B01A /* plane.obj */ = {isa = PBXFileReference; lastKnownFileType = text; path = plane.obj; sourceTree = "<group>"; };
 		0CBAC5DE252B9D49004CFA27 /* shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; path = shaders; sourceTree = "<group>"; };
 		0CBAC5E0252BA202004CFA27 /* bear.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = bear.obj; sourceTree = "<group>"; };
 		0CBAC5E1252BA257004CFA27 /* SandalF20.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SandalF20.obj; sourceTree = "<group>"; };
@@ -132,6 +140,7 @@
 		0C215D48252B859200A7F5B9 /* CSE167_project1 */ = {
 			isa = PBXGroup;
 			children = (
+				0C343EC62566F6960094B01A /* plane.obj */,
 				0CBAC5E2252BA257004CFA27 /* bunny.obj */,
 				0CBAC5E1252BA257004CFA27 /* SandalF20.obj */,
 				0CBAC5E0252BA202004CFA27 /* bear.obj */,
@@ -140,6 +149,7 @@
 				0C215D56252B878600A7F5B9 /* Cube.h */,
 				0C215D5B252B878600A7F5B9 /* main.h */,
 				0C215D51252B878600A7F5B9 /* Object.h */,
+				0C343EBA2564B12D0094B01A /* Node.h */,
 				0C215D52252B878600A7F5B9 /* PointCloud.cpp */,
 				0C215D54252B878600A7F5B9 /* PointCloud.h */,
 				0C215D5D252B878600A7F5B9 /* shader.cpp */,
@@ -153,6 +163,10 @@
 				0CFF87AA255513A2001FD09D /* PointLight.h */,
 				0C17DB23255E505200B2AD54 /* Sphere.cpp */,
 				0C17DB24255E505200B2AD54 /* Sphere.h */,
+				0C343EBC25662E200094B01A /* Transform.cpp */,
+				0C343EBD25662E200094B01A /* Transform.h */,
+				0C343EBF256631100094B01A /* Geometry.cpp */,
+				0C343EC0256631100094B01A /* Geometry.h */,
 			);
 			path = CSE167_project1;
 			sourceTree = "<group>";
@@ -265,12 +279,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0C343EBE25662E210094B01A /* Transform.cpp in Sources */,
 				0C215D61252B878600A7F5B9 /* shader.cpp in Sources */,
 				0C215D5F252B878600A7F5B9 /* Cube.cpp in Sources */,
 				0C17DB25255E505200B2AD54 /* Sphere.cpp in Sources */,
 				0CFF87A8255392C4001FD09D /* Materials.cpp in Sources */,
 				0C215D5E252B878600A7F5B9 /* PointCloud.cpp in Sources */,
 				0CFF87AB255513A5001FD09D /* PointLight.cpp in Sources */,
+				0C343EC1256631100094B01A /* Geometry.cpp in Sources */,
 				0C215D4A252B859200A7F5B9 /* main.cpp in Sources */,
 				0C215D60252B878600A7F5B9 /* Window.cpp in Sources */,
 			);

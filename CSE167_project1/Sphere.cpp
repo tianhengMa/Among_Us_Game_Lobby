@@ -5,12 +5,14 @@
 #include <numeric>
 #include <vector>
 
+using namespace std;
+
+
 #ifndef GL_PRIMITIVE_RESTART_FIXED_INDEX
 #define GL_PRIMITIVE_RESTART_FIXED_INDEX 0xFFFFFF
 #endif
 
 #include "Sphere.h"
-
 Sphere::Sphere() {
     int i, j;
     std::vector<GLfloat> vertices;
@@ -106,7 +108,10 @@ Sphere::Sphere() {
     }
     
     // Set the model matrix to an identity matrix.
-    model = glm::mat4(1);
+    model = glm::mat4(2);
+    //model = glm::translate(glm::mat4(1.0f), glm::vec3(0,0.4,7))*model;
+    //model = glm::scale(glm::mat4(1.0f), glm::vec3(0.8))*model;
+
 
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -144,8 +149,12 @@ void Sphere::draw(const glm::mat4& view, const glm::mat4& projection, GLuint sha
     glUniformMatrix4fv(glGetUniformLocation(shader, "projection"), 1, false, glm::value_ptr(projection));
     glUniformMatrix4fv(glGetUniformLocation(shader, "model"), 1, GL_FALSE, glm::value_ptr(model));
     
-    
     glBindVertexArray(vao);
+    
+    //glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+    //glEnable(GL_CULL_FACE);
+    //glCullFace(GL_BACK);
+    glDisable(GL_CULL_FACE);
     
     glPatchParameteri(GL_PATCH_VERTICES, 4);
     glEnable(GL_PRIMITIVE_RESTART);
@@ -153,9 +162,10 @@ void Sphere::draw(const glm::mat4& view, const glm::mat4& projection, GLuint sha
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glDrawElements(GL_TRIANGLES, numsToDraw, GL_UNSIGNED_INT, NULL);
     
-    glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    //glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+    //glDrawArrays(GL_TRIANGLES, 0, 36);
     
     glUseProgram(0);
     glBindVertexArray(0);
 }
+

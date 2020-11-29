@@ -181,6 +181,8 @@ unsigned int Cube::loadCubemap(std::vector<std::string> faces)
 {
     unsigned int textureID;
     glGenTextures(1, &textureID);
+    
+    // Bind the texture with cube map
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
     int width, height, nrChannels;
@@ -217,26 +219,25 @@ void Cube::draw(const glm::mat4& view, const glm::mat4& projection, GLuint shade
 	glUniformMatrix4fv(glGetUniformLocation(shader, "view"), 1, false, glm::value_ptr(view));
 	glUniformMatrix4fv(glGetUniformLocation(shader, "projection"), 1, false, glm::value_ptr(projection));
 	glUniformMatrix4fv(glGetUniformLocation(shader, "model"), 1, GL_FALSE, glm::value_ptr(model));
-	//glUniform3fv(glGetUniformLocation(shader, "color"), 1, glm::value_ptr(color));
 
 	// Bind the VAO
 	glBindVertexArray(VAO);
 
     // Culling backface
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    //glEnable(GL_CULL_FACE);
+    //glCullFace(GL_BACK);
     //glFrontFace(GL_CW);
+    glDisable(GL_CULL_FACE);
     
     // Bind the texture with cube map
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
     
 	// Draw the points using triangles, indexed with the EBO
-	//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glDepthMask(GL_TRUE);
     
     // Culling back to front face
-    glCullFace(GL_FRONT);
+    //glCullFace(GL_FRONT);
     
 	// Unbind the VAO and shader program
 	glBindVertexArray(0);
