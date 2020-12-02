@@ -13,19 +13,22 @@ Sphere* Window::discoBall;
 PointLight * Window::pointLight;
 
 //Scene graph components
-Transform * Window::viewTransform;
-Transform * Window::projectionTransform;
 Transform * Window::world;
+Transform * Window::astrnt_rd2world;
+/*
 Transform * Window::leg2world;
 Transform * Window::support2world;
 Transform * Window::wheel2support;
-Transform * Window::seat2wheel;
+Transform * Window::astrnt_rd2world;
+ */
 
-Geometry * Window::ground;
-Geometry * Window::wheel;
+Geometry * Window::lobby;
+Geometry * Window::astrnt_rd;
+/*
 Geometry * Window::leg;
 Geometry * Window::support;
 Geometry * Window::seat;
+ */
 
 float Window::eyePosX = 0;
 float Window::eyePosY = 0;
@@ -92,100 +95,51 @@ bool Window::initializeObjects()
     glm::vec3 atten = glm::vec3(0.1);
     pointLight = new PointLight(lightPos, color, atten);
     
-    cube = new Cube(5.0f);
-    discoBall = new Sphere();
+    //cube = new Cube(5.0f);
+    //discoBall = new Sphere();
         
     // Scene graphs
     
     // Initialize world transform
-    glm::mat4 groundModel = glm::mat4(1.0f);
-    groundModel = glm::rotate(glm::mat4(1.0f), 1.5708f, glm::vec3(1,0,0))*groundModel;
-    groundModel = glm::scale(glm::mat4(1.0f), glm::vec3(2))*groundModel;
-    groundModel = glm::translate(glm::mat4(1.0f), glm::vec3(0,-5,0))*groundModel;
-    world = new Transform(groundModel);
+    glm::mat4 worldModel = glm::mat4(1.0f);
+    worldModel = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1,0,0))*worldModel;
+    //worldModel = glm::scale(glm::mat4(1.0f), glm::vec3(2))*worldModel;
+    //worldModel = glm::translate(glm::mat4(1.0f), glm::vec3(0,-5,0))*worldModel;
+    world = new Transform(worldModel);
     
-    // Initialize gound geometry
-    glm::vec3 ambient = glm::vec3(0.05375,    0.05,    0.06625);
-    glm::vec3 diffuse = glm::vec3(0.18275,    0.17,    0.22525);
-    glm::vec3 specular = glm::vec3(0.332741,    0.328634,    0.346435);
-    float shininess = 0.3;
-    Materials * obsidian = new Materials(ambient,diffuse,specular,shininess);
-    ground = new Geometry("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/plane.obj",obsidian, pointLight,false);
+    /* //brass
+    glm::vec3 ambient = glm::vec3(0.329412,    0.223529,    0.027451);
+    glm::vec3 diffuse = glm::vec3(0.780392,    0.568627,    0.113725);
+    glm::vec3 specular = glm::vec3(0.992157,    0.941176,    0.807843);
+    float shininess = 0.21794872;
+     */
     
-    // Initialize support2world transform
-    glm::mat4 supportModel = glm::mat4(1.0f);
-    //supportModel = glm::rotate(glm::mat4(1.0f), 1.5708f, glm::vec3(1,0,0))*supportModel;
-    supportModel = glm::scale(glm::mat4(1.0f), glm::vec3(1.2))*supportModel;
-    supportModel = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,-2.5))*supportModel;
-    support2world = new Transform(supportModel);
+    glm::vec3 ambient = glm::vec3(0.25,    0.20725,    0.20725);
+    glm::vec3 diffuse = glm::vec3(1,    0.829,    0.829);
+    glm::vec3 specular = glm::vec3(0.296648,    0.296648,    0.296648);
+    float shininess = 0.088;
+    Materials * silver = new Materials(ambient,diffuse,specular,shininess);
+    lobby = new Geometry("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/amongus_lobby.obj",silver, pointLight,true);
     
-    // Initialize support geometry
+    glm::mat4 astrnt_rdModel = glm::mat4(1.0f);
+    astrnt_rdModel = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1,0,0))*astrnt_rdModel;
+    //astrnt_rdModel = glm::scale(glm::mat4(1.0f), glm::vec3(2))*astrnt_rdModel;
+    //astrnt_rdModel = glm::translate(glm::mat4(1.0f), glm::vec3(0,-5,0))*astrnt_rdModel;
+    
     ambient = glm::vec3(0.25,    0.20725,    0.20725);
     diffuse = glm::vec3(1,    0.829,    0.829);
     specular = glm::vec3(0.296648,    0.296648,    0.296648);
     shininess = 0.088;
-    Materials * silver = new Materials(ambient,diffuse,specular,shininess);
-    support = new Geometry("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/torus_hr.obj",silver, pointLight,false);
-    
-    // Initialize wheel2support transform
-    glm::mat4 wheelModel = glm::mat4(1.0f);
-    wheelModel = glm::rotate(glm::mat4(1.0f), -0.785398f, glm::vec3(1,0,0))*wheelModel;
-    wheelModel = glm::scale(glm::mat4(1.0f), glm::vec3(1.7))*wheelModel;
-    //wheelModel = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,-2.5))*wheelModel;
-    wheel2support = new Transform(wheelModel);
-    
-    // Initialize wheel geometry
-    ambient = glm::vec3(0.2125,    0.1275,    0.054);
-    diffuse = glm::vec3(0.714,    0.4284,    0.18144);
-    specular = glm::vec3(0.393548,    0.271906,    0.166721);
-    shininess = 0.2;
-    Materials * bronze = new Materials(ambient,diffuse,specular,shininess);
-    wheel = new Geometry("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/torus_hr.obj",bronze, pointLight,false);
-    
-    
-    // Initialize leg2world transform
-    glm::mat4 legModel = glm::mat4(1.0f);
-    legModel = glm::rotate(glm::mat4(1.0f), -1.5708f, glm::vec3(1,0,0))*legModel;
-    legModel = glm::scale(glm::mat4(1.0f), glm::vec3(0.5))*legModel;
-    //legModel = glm::translate(glm::mat4(1.0f), glm::vec3(0,-5,0))*legModel;
-    leg2world = new Transform(legModel);
-    
-    // Initialize leg geometry
-    leg = new Geometry("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/cone.obj",silver, pointLight,false);
-    
-    
-    // Initialize seat to wheel transform
-    glm::mat4 seatModel = glm::mat4(1.0f);
-    seatModel = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0,1,0))*seatModel;
-    seatModel = glm::scale(glm::mat4(1.0f), glm::vec3(0.004))*seatModel;
-    seatModel = glm::translate(glm::mat4(1.0f), glm::vec3(0,0.2,-1.5))*seatModel;
-    seat2wheel = new Transform(seatModel);
-    
-    // Initialize support geometry
-    ambient = glm::vec3(0.0,    0.0,    0.0);
-    diffuse = glm::vec3(0.5,    0.5,    0.0);
-    specular = glm::vec3(0.60,    0.60,    0.50);
-    shininess = 0.25;
     Materials * red = new Materials(ambient,diffuse,specular,shininess);
-    seat = new Geometry("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/seat.obj",red, pointLight,true);
+    astrnt_rd = new Geometry("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/amongus_lobby.obj",red, pointLight,false);
+    
     
     // Assign Children
     // level 1
-    world->addChild(ground);
-    world->addChild(support2world);
-    world->addChild(leg2world);
-    // level 2
-    support2world->addChild(support);
-    support2world->addChild(wheel2support);
-    leg2world->addChild(leg);
-    // level 3
-    wheel2support->addChild(wheel);
-    wheel2support->addChild(seat2wheel);
-    // level 4
-    seat2wheel->addChild(seat);
+    world->addChild(lobby);
     
     // Set cube to be the first to display
-    currObj = cube;
+    //currObj = cube;
 
     return true;
 }
@@ -278,7 +232,7 @@ void Window::resizeCallback(GLFWwindow* window, int width, int height)
 void Window::idleCallback()
 {
     // Perform any necessary updates here
-    currObj->update();
+    //currObj->update();
 }
 
 void Window::displayCallback(GLFWwindow* window)
@@ -287,14 +241,15 @@ void Window::displayCallback(GLFWwindow* window)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     // Render the objects
-    currObj->draw(view, projection, skyboxShader);
+    //currObj->draw(view, projection, skyboxShader);
     
-    unsigned int skyboxTexture = ((Cube*)currObj)->getSkyboxTexture();
-    discoBall->draw(view, projection, discoBallShader, skyboxTexture);
+    //unsigned int skyboxTexture = ((Cube*)currObj)->getSkyboxTexture();
+    //discoBall->draw(view, projection, discoBallShader, skyboxTexture);
     
     // Render the scene graph
     world->draw(geometryShader, glm::mat4(1.0f), true, view, projection);
     
+    /*
     glm::mat4 hRotate = glm::rotate(glm::radians(0.2f), glm::vec3(0,0,1));
     glm::mat4 vRotate = glm::rotate(glm::radians(0.2f), glm::vec3(1,0,0));
     glm::mat4 sRotate = glm::rotate(glm::radians(0.2f), glm::vec3(0,1,0));
@@ -307,10 +262,8 @@ void Window::displayCallback(GLFWwindow* window)
     }
     if (seatSwitch){
         seat2wheel->update(sRotate);
-    }
+    }*/
     
-    //world->draw(geometryShader, glm::mat4(1.0f));
-
     // Gets events, including input such as keyboard and mouse or window resizing
     glfwPollEvents();
 
@@ -354,6 +307,12 @@ void Window::cursor_position_callback(GLFWwindow* window, double xpos, double yp
     
     //view = glm::rotate(glm::mat4(1.0f), -rotAngle, rotAxis) * view;
     eyePos = glm::vec3(glm::rotate(glm::mat4(1.0f), -rotAngle, rotAxis) * glm::vec4(eyePos,1.0f));
+    //view = glm::lookAt(Window::eyePos, Window::lookAtPoint, Window::upVector);
+    
+    //lookAtPoint = glm::vec3(glm::translate(glm::mat4(1.0f), -eyePos) * glm::vec4(lookAtPoint,1.0f));
+    //lookAtPoint = glm::rotate(lookAtPoint, rotAngle, rotAxis);
+    //lookAtPoint = glm::vec3(glm::translate(glm::mat4(1.0f), eyePos) * glm::vec4(lookAtPoint,1.0f));
+    //cout << "LookAt point after is " << glm::to_string(lookAtPoint) << endl;
     view = glm::lookAt(Window::eyePos, Window::lookAtPoint, Window::upVector);
     
     /*

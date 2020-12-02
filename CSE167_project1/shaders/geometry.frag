@@ -36,7 +36,7 @@ void main()
     //vec3 lightPos = vec3(4,4,0);
     //vec3 lightColor = vec3(1, 1, 1);
     
-    vec3 atten_lightColor = lightColor;
+    vec3 atten_lightColor = lightColor/1.3;
     vec3 viewPos = vec3(0,0,20);
   
     // ambient

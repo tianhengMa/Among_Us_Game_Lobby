@@ -29,19 +29,17 @@ public:
     static Sphere* discoBall;
     
     // Scene graph components
-    static Transform * viewTransform;
-    static Transform * projectionTransform;
     static Transform * world;
-    static Transform * support2world;
-    static Transform * leg2world;
-    static Transform * wheel2support;
-    static Transform * seat2wheel;
+    static Transform * astrnt_rd2world;
+    //static Transform * leg2world;
+    //static Transform * wheel2support;
+    //static Transform * seat2wheel;
     
-    static Geometry * ground;
-    static Geometry * wheel;
-    static Geometry * support;
-    static Geometry * leg;
-    static Geometry * seat;
+    static Geometry * lobby;
+    static Geometry * astrnt_rd;
+    //static Geometry * support;
+    //static Geometry * leg;
+    //static Geometry * seat;
     
     // Animation switch
     static bool supportSwitch;

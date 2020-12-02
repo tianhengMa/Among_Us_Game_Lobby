@@ -24,6 +24,7 @@ Geometry::Geometry(std::string objFilename, Materials* in_materials, PointLight 
     // Initialize camera position
     //viewPos = eyePos;
     
+    /*
     ifstream objFile(objFilename); // The obj file we are reading.
 
     // Check whether the file can be opened.
@@ -96,7 +97,75 @@ Geometry::Geometry(std::string objFilename, Materials* in_materials, PointLight 
     }
 
     objFile.close();
+    */
     
+    std::vector< unsigned int > vertexIndices, uvIndices, normalIndices;
+    std::vector< glm::vec3 > temp_vertices;
+    std::vector< glm::vec2 > temp_uvs;
+    std::vector< glm::vec3 > temp_normals;
+    
+    const char * fileName = objFilename.c_str();
+    FILE * file = fopen(fileName, "r");
+    if( file == NULL ){
+        printf("Impossible to open the file !\n");
+        return;
+    }
+    
+    while( 1 ){
+
+        char lineHeader[128];
+        // read the first word of the line
+        int res = fscanf(file, "%s", lineHeader);
+        if (res == EOF)
+            break; // EOF = End Of File. Quit the loop.
+
+        // else : parse lineHeader
+        if ( strcmp( lineHeader, "v" ) == 0 ){
+            glm::vec3 vertex;
+            fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
+            temp_vertices.push_back(vertex);
+        }else if ( strcmp( lineHeader, "vt" ) == 0 ){
+            glm::vec2 uv;
+            fscanf(file, "%f %f\n", &uv.x, &uv.y );
+            temp_uvs.push_back(uv);
+        }else if ( strcmp( lineHeader, "vn" ) == 0 ){
+            glm::vec3 normal;
+            fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z );
+            temp_normals.push_back(normal);
+        }else if ( strcmp( lineHeader, "f" ) == 0 ){
+            std::string vertex1, vertex2, vertex3;
+            unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
+            int matches = fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2] );
+            if (matches != 9){
+                printf("File can't be read by our simple parser : ( Try exporting with other options\n");
+                return;
+            }
+            vertexIndices.push_back(vertexIndex[0]);
+            vertexIndices.push_back(vertexIndex[1]);
+            vertexIndices.push_back(vertexIndex[2]);
+            uvIndices    .push_back(uvIndex[0]);
+            uvIndices    .push_back(uvIndex[1]);
+            uvIndices    .push_back(uvIndex[2]);
+            normalIndices.push_back(normalIndex[0]);
+            normalIndices.push_back(normalIndex[1]);
+            normalIndices.push_back(normalIndex[2]);
+        }
+    }
+    
+    // For each vertex of each triangle
+    for( unsigned int i=0; i<vertexIndices.size(); i++ ){
+        unsigned int vertexIndex = vertexIndices[i];
+        glm::vec3 vertex = temp_vertices[ vertexIndex-1 ];
+        points.push_back(vertex);
+    }
+    
+    // For each normal of each triangle
+    for( unsigned int i=0; i<normalIndices.size(); i++ ){
+        unsigned int normalIndex = normalIndices[i];
+        glm::vec3 normal = temp_normals[ normalIndex-1 ];
+        normals.push_back(normal);
+    }
+
     
     // Get max and min for all dimensions for all points
     GLfloat max_x,max_y,max_z = FLT_MIN;
@@ -138,7 +207,7 @@ Geometry::Geometry(std::string objFilename, Materials* in_materials, PointLight 
     model = glm::mat4(1);
     
     // Uniformly scale all points by max distance
-    //model = glm::scale(model, glm::vec3(10 /max_dist));
+    model = glm::scale(model, glm::vec3(10 /max_dist));
 
     // Set the color.
     //color = glm::vec3(1, 0, 0);
@@ -168,9 +237,9 @@ Geometry::Geometry(std::string objFilename, Materials* in_materials, PointLight 
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), 0);
     
     // Generate EBO, bind the EBO to the bound VAO, and send the index data for triangles
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(glm::ivec3) * triangles.size(), triangles.data(), GL_STATIC_DRAW);
+   // glGenBuffers(1, &EBO);
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(glm::ivec3) * triangles.size(), triangles.data(), GL_STATIC_DRAW);
     
     // Unbind the VBO/VAO
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -182,7 +251,7 @@ Geometry::~Geometry()
     // Delete the VBO EBO and the VAO.
     glDeleteBuffers(1, &VBO);
     glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &EBO);
+    //glDeleteBuffers(1, &EBO);
 }
 
 void Geometry::draw(GLuint shader, glm::mat4 C, bool isRoot, glm::mat4 view, glm::mat4 projection)
@@ -212,9 +281,10 @@ void Geometry::draw(GLuint shader, glm::mat4 C, bool isRoot, glm::mat4 view, glm
 
     // Draw the points
     //glDrawArrays(GL_POINTS, 0, points.size());
+    glDrawArrays(GL_TRIANGLES, 0, points.size());
    
     // Draw the points using triangles, indexed with the EBO
-    glDrawElements(GL_TRIANGLES, 3*triangles.size() , GL_UNSIGNED_INT, 0);
+    //glDrawElements(GL_TRIANGLES, 3*triangles.size() , GL_UNSIGNED_INT, 0);
     
     // Unbind the VAO and shader program
     glBindVertexArray(0);
