@@ -13,16 +13,20 @@ using namespace std;
 #include <math.h>
 #include <glm/gtx/string_cast.hpp>
 
-Geometry::Geometry(std::string objFilename, Materials* in_materials, PointLight * in_pointLight, bool isSeat)
+Geometry::Geometry(std::string objFilename, Materials* in_materials, DirecLight * in_direcLight, int in_isAstronaut, glm::vec3 in_color, BoundingSphere * in_sphere)
 {
     // Initialize materials
     materials = in_materials;
     
     // Initialize pointlight
-    pointLight = in_pointLight;
+    direcLight = in_direcLight;
     
-    // Initialize camera position
-    //viewPos = eyePos;
+    // Initialize isAstronaut
+    isAstronaut = in_isAstronaut;
+    
+    sphere = in_sphere;
+    
+    lookAt = glm::vec3(0,0,1);
     
     /*
     ifstream objFile(objFilename); // The obj file we are reading.
@@ -187,7 +191,6 @@ Geometry::Geometry(std::string objFilename, Materials* in_materials, PointLight 
     GLfloat center_y = (max_y + min_y)/2;
     GLfloat center_z = (max_z + min_z)/2;
     glm::vec3 center = glm::vec3(center_x, center_y, center_z);
-    
     // Max distance from center point
     GLfloat max_dist = 0;
     
@@ -203,6 +206,13 @@ Geometry::Geometry(std::string objFilename, Materials* in_materials, PointLight 
 
     }
     
+    // Initialize bounding sphere center and radius
+    //sphere->center = center;
+    //sphere->radius = max_dist;
+    cout << "center is: " << glm::to_string(sphere->center) << std::endl;
+    cout << "radius is: " << sphere->radius << std::endl;
+    //sphere = new BoundingSphere(center,max_dist);
+    
     // Set the model matrix to an identity matrix.
     model = glm::mat4(1);
     
@@ -210,7 +220,7 @@ Geometry::Geometry(std::string objFilename, Materials* in_materials, PointLight 
     model = glm::scale(model, glm::vec3(10 /max_dist));
 
     // Set the color.
-    //color = glm::vec3(1, 0, 0);
+    color = in_color;
 
     // Generate a Vertex Array (VAO) and Vertex Buffer Object (VBO)
     glGenVertexArrays(1, &VAO);
@@ -264,14 +274,17 @@ void Geometry::draw(GLuint shader, glm::mat4 C, bool isRoot, glm::mat4 view, glm
     //glUniformMatrix4fv(glGetUniformLocation(shader, "view"), 1, false, glm::value_ptr(view));
     //glUniformMatrix4fv(glGetUniformLocation(shader, "projection"), 1, false, glm::value_ptr(projection));
     glUniformMatrix4fv(glGetUniformLocation(shader, "toWorld"), 1, GL_FALSE, glm::value_ptr(toWorld));
-    //glUniform3fv(glGetUniformLocation(shader, "color"), 1, glm::value_ptr(color));
+    glUniform3fv(glGetUniformLocation(shader, "color"), 1, glm::value_ptr(color));
     //glUniform3fv(glGetUniformLocation(shader, "viewPos"), 1, glm::value_ptr(viewPos));
+    
+    // Send color switch to shader
+    glUniform1i(glGetUniformLocation(shader, "isAstronaut"), isAstronaut);
     
     // Send materials information to shader
     materials->sendMatToShader(shader);
     
-    // Send point light info to shader
-    pointLight->sendLightToShader(shader);
+    // Send directional light info to shader
+    direcLight->sendLightToShader(shader);
     
     // Bind the VAO
     glBindVertexArray(VAO);
@@ -301,12 +314,27 @@ void Geometry::ballRotate(glm::vec3 rotAxis, float rotAngle){
     //model = glm::rotate(model, rotAngle, rotAxis);
 }
 
-void Geometry::adjust(float amount){
+// adjust the bounding sphere center and radius
+void Geometry::adjust_sphere(float radius_scale, glm::vec3 center_translate){
+    //cout << "After adjusting " << std::endl;
     //model = glm::scale(glm::mat4(1.0f), glm::vec3(amount))*model;
     //model = glm::rotate(glm::mat4(1.0f), amount, glm::vec3(1,0,0))*model;
-    model = glm::translate(glm::mat4(1.0f), glm::vec3(0,amount,0))*model;
+    //model = glm::translate(glm::mat4(1.0f), glm::vec3(0,amount,0))*model;
+    sphere->center = glm::vec3(glm::translate(glm::mat4(1.0f), center_translate) * glm::vec4(sphere->center ,1.0f));
+    //sphere->radius = radius_scale*sphere->radius;
+    //cout << "center is: " << glm::to_string(sphere->center) << std::endl;
+    //cout << "radius is: " << sphere->radius << std::endl;
 }
 
-void Geometry::translate(float x, float y, float z){
-    model = glm::translate(glm::mat4(1.0f), glm::vec3(x,y,z))*model;
+void Geometry::translate(glm::vec3 translation){
+    model = glm::translate(glm::mat4(1.0f), translation)*model;
+    adjust_sphere(1,translation);
+}
+
+void Geometry::rotate(float direction){
+    // rotate model
+    model = glm::rotate(glm::mat4(1.0f), direction*glm::radians(10.0f), glm::vec3(0, 1, 0))*model;
+    // rotate lookAt
+    lookAt = glm::vec3(glm::rotate(glm::mat4(1.0f), direction* glm::radians(10.0f), glm::vec3(0, 1, 0)) * glm::vec4(lookAt,1.0f));
+    //adjust_sphere(1,translation);
 }

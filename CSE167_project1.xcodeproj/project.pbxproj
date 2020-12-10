@@ -17,6 +17,11 @@
 		0C215D83252B8A4900A7F5B9 /* OpenGL.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0C215D64252B88ED00A7F5B9 /* OpenGL.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		0C343EBE25662E210094B01A /* Transform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C343EBC25662E200094B01A /* Transform.cpp */; };
 		0C343EC1256631100094B01A /* Geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C343EBF256631100094B01A /* Geometry.cpp */; };
+		0C4F464725786A0E00B3BAE2 /* DirecLight.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C4F464525786A0E00B3BAE2 /* DirecLight.cpp */; };
+		0C7C5DC2257C4565004A91C6 /* BoundingSphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C7C5DC0257C4565004A91C6 /* BoundingSphere.cpp */; };
+		0C7C5DC5257FF7AA004A91C6 /* BoundingPlane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C7C5DC3257FF7AA004A91C6 /* BoundingPlane.cpp */; };
+		0C7C5DC82581F0DC004A91C6 /* ParticleSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C7C5DC62581F0DB004A91C6 /* ParticleSystem.cpp */; };
+		0C7C5DCB25829B52004A91C6 /* Particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0C7C5DC925829B51004A91C6 /* Particle.cpp */; };
 		0CBAC5DF252B9D4F004CFA27 /* shaders in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0CBAC5DE252B9D49004CFA27 /* shaders */; };
 		0CFF87A2254CB823001FD09D /* libglfw.3.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CFF87A1254CB823001FD09D /* libglfw.3.3.dylib */; };
 		0CFF87A3254CB823001FD09D /* libglfw.3.3.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0CFF87A1254CB823001FD09D /* libglfw.3.3.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -96,6 +101,16 @@
 		0C343EBF256631100094B01A /* Geometry.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Geometry.cpp; sourceTree = "<group>"; };
 		0C343EC0256631100094B01A /* Geometry.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Geometry.h; sourceTree = "<group>"; };
 		0C343EC62566F6960094B01A /* plane.obj */ = {isa = PBXFileReference; lastKnownFileType = text; path = plane.obj; sourceTree = "<group>"; };
+		0C4F464525786A0E00B3BAE2 /* DirecLight.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DirecLight.cpp; sourceTree = "<group>"; };
+		0C4F464625786A0E00B3BAE2 /* DirecLight.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DirecLight.h; sourceTree = "<group>"; };
+		0C7C5DC0257C4565004A91C6 /* BoundingSphere.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BoundingSphere.cpp; sourceTree = "<group>"; };
+		0C7C5DC1257C4565004A91C6 /* BoundingSphere.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BoundingSphere.h; sourceTree = "<group>"; };
+		0C7C5DC3257FF7AA004A91C6 /* BoundingPlane.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BoundingPlane.cpp; sourceTree = "<group>"; };
+		0C7C5DC4257FF7AA004A91C6 /* BoundingPlane.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BoundingPlane.h; sourceTree = "<group>"; };
+		0C7C5DC62581F0DB004A91C6 /* ParticleSystem.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleSystem.cpp; sourceTree = "<group>"; };
+		0C7C5DC72581F0DB004A91C6 /* ParticleSystem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ParticleSystem.h; sourceTree = "<group>"; };
+		0C7C5DC925829B51004A91C6 /* Particle.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Particle.cpp; sourceTree = "<group>"; };
+		0C7C5DCA25829B52004A91C6 /* Particle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Particle.h; sourceTree = "<group>"; };
 		0CBAC5DE252B9D49004CFA27 /* shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; path = shaders; sourceTree = "<group>"; };
 		0CBAC5E0252BA202004CFA27 /* bear.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = bear.obj; sourceTree = "<group>"; };
 		0CBAC5E1252BA257004CFA27 /* SandalF20.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SandalF20.obj; sourceTree = "<group>"; };
@@ -167,6 +182,16 @@
 				0C343EBD25662E200094B01A /* Transform.h */,
 				0C343EBF256631100094B01A /* Geometry.cpp */,
 				0C343EC0256631100094B01A /* Geometry.h */,
+				0C4F464525786A0E00B3BAE2 /* DirecLight.cpp */,
+				0C4F464625786A0E00B3BAE2 /* DirecLight.h */,
+				0C7C5DC0257C4565004A91C6 /* BoundingSphere.cpp */,
+				0C7C5DC1257C4565004A91C6 /* BoundingSphere.h */,
+				0C7C5DC3257FF7AA004A91C6 /* BoundingPlane.cpp */,
+				0C7C5DC4257FF7AA004A91C6 /* BoundingPlane.h */,
+				0C7C5DC62581F0DB004A91C6 /* ParticleSystem.cpp */,
+				0C7C5DC72581F0DB004A91C6 /* ParticleSystem.h */,
+				0C7C5DC925829B51004A91C6 /* Particle.cpp */,
+				0C7C5DCA25829B52004A91C6 /* Particle.h */,
 			);
 			path = CSE167_project1;
 			sourceTree = "<group>";
@@ -280,9 +305,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				0C343EBE25662E210094B01A /* Transform.cpp in Sources */,
+				0C7C5DCB25829B52004A91C6 /* Particle.cpp in Sources */,
 				0C215D61252B878600A7F5B9 /* shader.cpp in Sources */,
+				0C7C5DC82581F0DC004A91C6 /* ParticleSystem.cpp in Sources */,
+				0C4F464725786A0E00B3BAE2 /* DirecLight.cpp in Sources */,
 				0C215D5F252B878600A7F5B9 /* Cube.cpp in Sources */,
+				0C7C5DC2257C4565004A91C6 /* BoundingSphere.cpp in Sources */,
 				0C17DB25255E505200B2AD54 /* Sphere.cpp in Sources */,
+				0C7C5DC5257FF7AA004A91C6 /* BoundingPlane.cpp in Sources */,
 				0CFF87A8255392C4001FD09D /* Materials.cpp in Sources */,
 				0C215D5E252B878600A7F5B9 /* PointCloud.cpp in Sources */,
 				0CFF87AB255513A5001FD09D /* PointLight.cpp in Sources */,

@@ -17,6 +17,9 @@
 
 #include "PointLight.h"
 #include "Materials.h"
+#include "DirecLight.h"
+#include "BoundingSphere.h"
+#include "BoundingPlane.h"
 
 #include <iostream>
 #include <vector>

@@ -1,16 +1,17 @@
 #version 330 core
-out vec4 FragColor;
+// This is a sample fragment shader.
 
-in vec3 Normal;
-in vec3 Position;
+// Inputs to the fragment shader are the outputs of the same name from the vertex shader.
+// Note that you do not have access to the vertex shader's default output, gl_Position.
+//in float sampleExtraOutput;
 
-//uniform vec3 cameraPos;
-uniform samplerCube skybox;
+uniform vec3 color;
+
+// You can output many things. The first vec4 type output determines the color of the fragment
+out vec4 fragColor;
 
 void main()
 {
-    vec3 cameraPos = vec3(0,0,20);
-    vec3 I = normalize(Position - cameraPos);
-    vec3 R = reflect(I, normalize(Normal));
-    FragColor = vec4(texture(skybox, R).rgb, 1.0);
+    // Use the color passed in. An alpha of 1.0f means it is not transparent.
+    fragColor = vec4(color, 1.0f);
 }

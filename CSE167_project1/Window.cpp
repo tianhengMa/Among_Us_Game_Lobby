@@ -10,7 +10,7 @@ const char* Window::windowTitle = "GLFW Starter Project";
 Cube * Window::cube;
 Object* currObj;
 Sphere* Window::discoBall;
-PointLight * Window::pointLight;
+DirecLight * Window::direcLight;;
 
 //Scene graph components
 Transform * Window::world;
@@ -29,6 +29,15 @@ Geometry * Window::leg;
 Geometry * Window::support;
 Geometry * Window::seat;
  */
+BoundingSphere * Window::leftBoxSphere;
+BoundingSphere * Window::rightBoxSphere;
+
+BoundingPlane * Window::topPlane;
+BoundingPlane * Window::bottomPlane;
+BoundingPlane * Window::leftPlane;
+BoundingPlane * Window::rightPlane;
+BoundingPlane * Window::leftDiagPlane;
+BoundingPlane * Window::rightDiagPlane;
 
 float Window::eyePosX = 0;
 float Window::eyePosY = 0;
@@ -52,6 +61,9 @@ bool Window::mousePressed;
 double Window::startPosX;
 double Window::startPosY;
 
+// Particle System
+ParticleSystem * Window::particleSystem;
+
 // View Matrix:
 glm::vec3 Window::eyePos(eyePosX, eyePosY, eyePosZ);            // Camera position.
 glm::vec3 Window::lookAtPoint(lookAtX, lookAtY, lookAtZ);        // The point we are looking at.
@@ -59,7 +71,7 @@ glm::vec3 Window::upVector(0, 1, 0);        // The up direction of the camera.
 glm::mat4 Window::view = glm::lookAt(Window::eyePos, Window::lookAtPoint, Window::upVector);
 
 // Shader Program ID
-GLuint Window::discoBallShader;
+GLuint Window::particleShader;
 GLuint Window::skyboxShader;
 GLuint Window::geometryShader;
 
@@ -68,7 +80,7 @@ float Window::nob = 0;
 bool Window::initializeProgram() {
     // Create a shader program with a vertex shader and a fragment shader.
     skyboxShader = LoadShaders("shaders/skybox.vert", "shaders/skybox.frag");
-    discoBallShader = LoadShaders("shaders/shader.vert", "shaders/shader.frag");
+    particleShader = LoadShaders("shaders/shader.vert", "shaders/shader.frag");
     geometryShader = LoadShaders("shaders/geometry.vert", "shaders/geometry.frag");
     
     // Check the shader program.
@@ -78,7 +90,7 @@ bool Window::initializeProgram() {
         return false;
     }
     
-    if (!discoBallShader)
+    if (!particleShader)
     {
         std::cerr << "Failed to initialize shader program" << std::endl;
         return false;
@@ -89,16 +101,15 @@ bool Window::initializeProgram() {
 
 bool Window::initializeObjects()
 {
-    // Create pointLight
-    glm::vec3 lightPos = glm::vec3(50,50,0);
-    glm::vec3 color = glm::vec3(1, 1, 1);
-    glm::vec3 atten = glm::vec3(0.1);
-    pointLight = new PointLight(lightPos, color, atten);
+    glm::vec3 lightDirection = glm::vec3(0,-1,0);
+    glm::vec3 lightAmbient = glm::vec3(0.2,    0.2,    0.2);
+    glm::vec3 lightDiffuse = glm::vec3(1,    1,    1);
+    glm::vec3 lightSpecular = glm::vec3(0.3,    0.3,    0.3);
+    direcLight = new DirecLight(lightDirection, lightAmbient, lightDiffuse, lightSpecular);
     
     //cube = new Cube(5.0f);
     //discoBall = new Sphere();
         
-    // Scene graphs
     
     // Initialize world transform
     glm::mat4 worldModel = glm::mat4(1.0f);
@@ -113,30 +124,51 @@ bool Window::initializeObjects()
     glm::vec3 specular = glm::vec3(0.992157,    0.941176,    0.807843);
     float shininess = 0.21794872;
      */
-    
+    // Initialize lobby
+    BoundingSphere * lobby_sphere = new BoundingSphere(glm::vec3(-0.516571, 6.330648, 4.394818), 25.2175f);
     glm::vec3 ambient = glm::vec3(0.25,    0.20725,    0.20725);
     glm::vec3 diffuse = glm::vec3(1,    0.829,    0.829);
     glm::vec3 specular = glm::vec3(0.296648,    0.296648,    0.296648);
     float shininess = 0.088;
     Materials * silver = new Materials(ambient,diffuse,specular,shininess);
-    lobby = new Geometry("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/amongus_lobby.obj",silver, pointLight,true);
+    cout << "Building Lobby" << endl;
+    lobby = new Geometry("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/amongus_lobby.obj",silver, direcLight,0, glm::vec3(1),lobby_sphere);
     
+    // initialize red player
+    float radius = 4.0f;
+    BoundingSphere * rd_sphere = new BoundingSphere(glm::vec3(0.000000, 0.678456, -0.121127), radius);
     glm::mat4 astrnt_rdModel = glm::mat4(1.0f);
-    astrnt_rdModel = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1,0,0))*astrnt_rdModel;
-    //astrnt_rdModel = glm::scale(glm::mat4(1.0f), glm::vec3(2))*astrnt_rdModel;
-    //astrnt_rdModel = glm::translate(glm::mat4(1.0f), glm::vec3(0,-5,0))*astrnt_rdModel;
+    //astrnt_rdModel = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1,0,0))*astrnt_rdModel;
+    astrnt_rdModel = glm::scale(glm::mat4(1.0f), glm::vec3(0.1))*astrnt_rdModel;
+    astrnt_rdModel = glm::translate(glm::mat4(1.0f), glm::vec3(0,-1,0))*astrnt_rdModel;
+    astrnt_rd2world = new Transform(astrnt_rdModel);
+  
+    glm::vec3 red = glm::vec3(0.77255, 0.07058 ,0.06667);
+    cout << "Building Astronaut red" << endl;
+    astrnt_rd = new Geometry("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/amongus_astro_still.obj",silver, direcLight,1, red, rd_sphere);
+    astrnt_rd->translate(glm::vec3(0,0,10));
+    particleSystem = new ParticleSystem(astrnt_rd->sphere->center);
     
-    ambient = glm::vec3(0.25,    0.20725,    0.20725);
-    diffuse = glm::vec3(1,    0.829,    0.829);
-    specular = glm::vec3(0.296648,    0.296648,    0.296648);
-    shininess = 0.088;
-    Materials * red = new Materials(ambient,diffuse,specular,shininess);
-    astrnt_rd = new Geometry("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/amongus_lobby.obj",red, pointLight,false);
+    // Initialize box bounding spheres
+    float box_radius = 14.0f;
+    leftBoxSphere = new BoundingSphere(glm::vec3(-36.500000, 0.678456, 26.878872),box_radius);
+    rightBoxSphere = new BoundingSphere(glm::vec3(44.000000, 0.678456, 13.878872), box_radius);
     
+    // Initialize wall bounding planes
+    topPlane = new BoundingPlane(glm::vec3(0.000000, 0.678456, 0.878872),glm::vec3(0, 0, 1));
+    bottomPlane = new BoundingPlane(glm::vec3(0.000000, 0.678456, 65.878876),glm::vec3(0, 0, -1));
+    leftPlane = new BoundingPlane(glm::vec3(-62.000000, 0.678456, 27.878876),glm::vec3(1, 0, 0));
+    rightPlane = new BoundingPlane(glm::vec3(67.000000, 0.678456, 20.878876),glm::vec3(-1, 0, 0));
+    leftDiagPlane = new BoundingPlane(glm::vec3(-54.000000, 0.678456, 55.878876), glm::normalize(glm::vec3(1, 0, -1)));
+    rightDiagPlane = new BoundingPlane(glm::vec3(58.000000, 0.678456, 53.878876), glm::normalize(glm::vec3(-1, 0, -1)));
     
     // Assign Children
-    // level 1
     world->addChild(lobby);
+    world->addChild(astrnt_rd2world);
+    astrnt_rd2world->addChild(astrnt_rd);
+    
+    glfwSetTime(0);
+
     
     // Set cube to be the first to display
     //currObj = cube;
@@ -152,7 +184,7 @@ void Window::cleanUp()
 
     // Delete the shader program.
     glDeleteProgram(skyboxShader);
-    glDeleteProgram(discoBallShader);
+    glDeleteProgram(particleShader);
 }
 
 GLFWwindow* Window::createWindow(int width, int height)
@@ -232,7 +264,9 @@ void Window::resizeCallback(GLFWwindow* window, int width, int height)
 void Window::idleCallback()
 {
     // Perform any necessary updates here
-    //currObj->update();
+    double time = glfwGetTime();
+    particleSystem->update(time);
+    
 }
 
 void Window::displayCallback(GLFWwindow* window)
@@ -244,25 +278,12 @@ void Window::displayCallback(GLFWwindow* window)
     //currObj->draw(view, projection, skyboxShader);
     
     //unsigned int skyboxTexture = ((Cube*)currObj)->getSkyboxTexture();
-    //discoBall->draw(view, projection, discoBallShader, skyboxTexture);
+    //discoBall->draw(view, projection, particleShader, skyboxTexture);
     
     // Render the scene graph
     world->draw(geometryShader, glm::mat4(1.0f), true, view, projection);
     
-    /*
-    glm::mat4 hRotate = glm::rotate(glm::radians(0.2f), glm::vec3(0,0,1));
-    glm::mat4 vRotate = glm::rotate(glm::radians(0.2f), glm::vec3(1,0,0));
-    glm::mat4 sRotate = glm::rotate(glm::radians(0.2f), glm::vec3(0,1,0));
-    
-    if (supportSwitch){
-        support2world->update(hRotate);
-    }
-    if (wheelSwitch){
-        wheel2support->update(vRotate);
-    }
-    if (seatSwitch){
-        seat2wheel->update(sRotate);
-    }*/
+    particleSystem->draw(view, projection, particleShader);
     
     // Gets events, including input such as keyboard and mouse or window resizing
     glfwPollEvents();
@@ -345,14 +366,24 @@ glm::vec3 Window::trackBallMapping(double pointX, double pointY){
     return vec;
 }
 
+bool Window::notTouchingAnything(BoundingSphere * sphere, glm::vec3 translation){
+    return (sphere->simTranslate(translation)->notTouching(leftBoxSphere)
+            && sphere->simTranslate(translation)->notTouching(rightBoxSphere)
+            && sphere->simTranslate(translation)->notTouching(topPlane)
+            && sphere->simTranslate(translation)->notTouching(bottomPlane)
+            && sphere->simTranslate(translation)->notTouching(leftPlane)
+            && sphere->simTranslate(translation)->notTouching(rightPlane)
+            && sphere->simTranslate(translation)->notTouching(leftDiagPlane)
+            && sphere->simTranslate(translation)->notTouching(rightDiagPlane));
+}
 
 void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     /*
      * TODO: Modify below to add your key callbacks.
      */
-    float larger = 0.5f;
-    float smaller = -0.5f;
+    
+    BoundingSphere * sphere = astrnt_rd->sphere;
     // Check for a key press.
     if (action == GLFW_PRESS)
     {
@@ -363,66 +394,57 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
                 glfwSetWindowShouldClose(window, GL_TRUE);
                 break;
             
-            // Toggle animation of different layers
-            case GLFW_KEY_1:
-                supportSwitch = !supportSwitch;
+            // Move Forwards
+            case GLFW_KEY_UP:{
+                glm::vec3 translation = astrnt_rd->lookAt;
+                if (notTouchingAnything(sphere, translation)){
+                    astrnt_rd->translate(translation);
+                }
                 break;
-            case GLFW_KEY_2:
-                wheelSwitch = !wheelSwitch;
+            }
+            // Move Backwards
+            case GLFW_KEY_DOWN:{
+                glm::vec3 translation = -1.0f* astrnt_rd->lookAt;
+                if (notTouchingAnything(sphere, translation)){
+                    astrnt_rd->translate(translation);
+                }
                 break;
-            case GLFW_KEY_3:
-                seatSwitch = !seatSwitch;
+            }
+            // Rotate Left
+            case GLFW_KEY_LEFT:{
+                glm::vec3 translation = sphere->center;
+                astrnt_rd->translate(-translation);
+                astrnt_rd->rotate(1.0f);
+                astrnt_rd->translate(translation);
                 break;
-                
-            // Adjust viewing position
-            // Move Up
-            case GLFW_KEY_UP:
-                eyePosY++;
-                lookAtY++;
-                eyePos = glm::vec3(eyePosX, eyePosY, eyePosZ);
-                lookAtPoint = glm::vec3(lookAtX, lookAtY, lookAtZ);
-                view = glm::lookAt(Window::eyePos, Window::lookAtPoint, Window::upVector);
+            }
+            // Rotate right
+            case GLFW_KEY_RIGHT:{
+                glm::vec3 translation = sphere->center;
+                astrnt_rd->translate(-translation);
+                astrnt_rd->rotate(-1.0f);
+                astrnt_rd->translate(translation);
                 break;
-            // Move Down
-            case GLFW_KEY_DOWN:
-                eyePosY--;
-                lookAtY--;
-                eyePos = glm::vec3(eyePosX, eyePosY, eyePosZ);
-                lookAtPoint = glm::vec3(lookAtX, lookAtY, lookAtZ);
-                view = glm::lookAt(Window::eyePos, Window::lookAtPoint, Window::upVector);
-                break;
-            // Move Left
-            case GLFW_KEY_LEFT:
-                eyePosX--;
-                lookAtX--;
-                eyePos = glm::vec3(eyePosX, eyePosY, eyePosZ);
-                lookAtPoint = glm::vec3(lookAtX, lookAtY, lookAtZ);
-                view = glm::lookAt(Window::eyePos, Window::lookAtPoint, Window::upVector);
-                break;
-            // Move Left
-            case GLFW_KEY_RIGHT:
-                eyePosX++;
-                lookAtX++;
-                eyePos = glm::vec3(eyePosX, eyePosY, eyePosZ);
-                lookAtPoint = glm::vec3(lookAtX, lookAtY, lookAtZ);
-                view = glm::lookAt(Window::eyePos, Window::lookAtPoint, Window::upVector);
-                break;
+            }
             // Move In
-            case GLFW_KEY_W:
+            case GLFW_KEY_W:{
                 eyePosZ--;
                 lookAtZ--;
                 eyePos = glm::vec3(eyePosX, eyePosY, eyePosZ);
                 lookAtPoint = glm::vec3(lookAtX, lookAtY, lookAtZ);
                 view = glm::lookAt(Window::eyePos, Window::lookAtPoint, Window::upVector);
                 break;
+            }
             // Move Out
-            case GLFW_KEY_S:
+            case GLFW_KEY_S:{
                 eyePosZ++;
                 lookAtZ++;
                 eyePos = glm::vec3(eyePosX, eyePosY, eyePosZ);
                 lookAtPoint = glm::vec3(lookAtX, lookAtY, lookAtZ);
                 view = glm::lookAt(Window::eyePos, Window::lookAtPoint, Window::upVector);
                 break;
+            }
+                /*
             // Rotate Left
             case GLFW_KEY_A:
                 //cout << "LookAt point before is " << glm::to_string(lookAtPoint) << endl;
@@ -440,7 +462,7 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
                 lookAtPoint = glm::vec3(glm::translate(glm::mat4(1.0f), eyePos) * glm::vec4(lookAtPoint,1.0f));
                 view = glm::lookAt(Window::eyePos, Window::lookAtPoint, Window::upVector);
                 break;
-                
+                */
                 
             default:
                 break;

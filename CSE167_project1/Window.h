@@ -8,6 +8,9 @@
 #include "PointCloud.h"
 #include "Sphere.h"
 #include "PointLight.h"
+#include "DirecLight.h"
+#include "ParticleSystem.h"
+#include "Particle.h"
 
 #include "Transform.h"
 #include "Geometry.h"
@@ -41,13 +44,24 @@ public:
     //static Geometry * leg;
     //static Geometry * seat;
     
+    // Box bounding sphere & wall bounding planes
+    static BoundingSphere * leftBoxSphere;
+    static BoundingSphere * rightBoxSphere;
+    
+    static BoundingPlane * topPlane;
+    static BoundingPlane * bottomPlane;
+    static BoundingPlane * leftPlane;
+    static BoundingPlane * rightPlane;
+    static BoundingPlane * leftDiagPlane;
+    static BoundingPlane * rightDiagPlane;
+    
     // Animation switch
     static bool supportSwitch;
     static bool wheelSwitch;
     static bool seatSwitch;
     
-    // Point light
-    static PointLight * pointLight;
+    // Directional light
+    static DirecLight * direcLight;
 
     // Camera Matrices
     static glm::mat4 projection;
@@ -62,7 +76,7 @@ public:
     static float lookAtZ;
 
     // Shader Program ID
-    static GLuint discoBallShader;
+    static GLuint particleShader;
     static GLuint skyboxShader;
     static GLuint geometryShader;
 
@@ -93,6 +107,12 @@ public:
     static bool mousePressed;
     static double startPosX;
     static double startPosY;
+    
+    // Check Collisons
+    static bool notTouchingAnything(BoundingSphere * sphere, glm::vec3 translation);
+    
+    // Particle system
+    static ParticleSystem * particleSystem;
 
 };
 
