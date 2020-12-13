@@ -9,4 +9,10 @@
 BoundingPlane::BoundingPlane(glm::vec3 point, glm::vec3 normal){
     this->point = point;
     this->normal = normal;
+    
+    index = -1;
+}
+
+bool BoundingPlane::notTouching(BoundingObj * obj, int type){
+    return true;
 }

@@ -331,10 +331,10 @@ void Geometry::translate(glm::vec3 translation){
     adjust_sphere(1,translation);
 }
 
-void Geometry::rotate(float direction){
+void Geometry::rotate(float direction, float degrees){
     // rotate model
-    model = glm::rotate(glm::mat4(1.0f), direction*glm::radians(10.0f), glm::vec3(0, 1, 0))*model;
+    model = glm::rotate(glm::mat4(1.0f), direction*glm::radians(degrees), glm::vec3(0, 1, 0))*model;
     // rotate lookAt
-    lookAt = glm::vec3(glm::rotate(glm::mat4(1.0f), direction* glm::radians(10.0f), glm::vec3(0, 1, 0)) * glm::vec4(lookAt,1.0f));
+    lookAt = glm::vec3(glm::rotate(glm::mat4(1.0f), direction* glm::radians(degrees), glm::vec3(0, 1, 0)) * glm::vec4(lookAt,1.0f));
     //adjust_sphere(1,translation);
 }

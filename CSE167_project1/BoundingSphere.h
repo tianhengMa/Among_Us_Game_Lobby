@@ -12,15 +12,17 @@
 #include "shader.h"
 #include "Object.h"
 #include "BoundingPlane.h"
+#include "BoundingObj.h"
 
-class BoundingSphere{
+
+class BoundingSphere: public BoundingObj{
 private:
 
     
 public:
     BoundingSphere(glm::vec3 center, float radius);
-    bool notTouching(BoundingSphere * other);
-    bool notTouching(BoundingPlane * plane);
+    bool notTouching(BoundingObj * obj, int type);
+    //bool notTouching(BoundingPlane * plane);
     BoundingSphere * simTranslate(glm::vec3 translation);
     
     glm::vec3 center;

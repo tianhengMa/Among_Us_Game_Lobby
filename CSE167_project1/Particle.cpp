@@ -13,17 +13,16 @@ Particle::Particle(glm::vec3 position, glm::vec3 velocity, int life){
     this->life = life;
 }
 glm::vec3 Particle::update(float deltaTime){
-    //glfwGetTime();
-    std::cout << "Updating particle ";
+    //std::cout << "Updating particle ";
     life -= deltaTime;
-    //if (life > 0){
-        //glm::vec3 velocity = glm::vec3(rand()/RAND_MAX);
-        //position = glm::vec3(glm::translate(glm::mat4(1.0f), velocity) * glm::vec4(position ,1.0f));
-        position += deltaTime*velocity;
-    //} else {
-        //position = glm::vec3 (1000,1000,1000);
-    //}
-    std::cout << " life is " << life << " position is " << glm::to_string(position) << endl;
+    if (life > 0){
+        // Update position
+        position += 10*deltaTime*velocity;
+    } else {
+        // Move position to somewhere viewer can't see
+        position = glm::vec3 (-10000,-10000,-10000);
+    }
+    //std::cout << " life is " << life << " position is " << glm::to_string(position) << endl;
     
     return position;
 }

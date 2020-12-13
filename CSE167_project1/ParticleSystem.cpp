@@ -6,19 +6,30 @@
 //
 
 #include "ParticleSystem.h"
-ParticleSystem::ParticleSystem(glm::vec3 origin){
+using namespace std;
+
+ParticleSystem::ParticleSystem(glm::vec3 origin, bool disappear, float life){
     for (int i = 0; i < MAX_PARTICLES; i++){
-        glm::vec3 velocity = glm::vec3(rand() % 2);
-        glm::vec3 position = origin + velocity;
-        particles[i] = new Particle(position,velocity, PARTICLE_LIFE);
+        float x = (float)rand()/RAND_MAX;
+        float y = (float)rand()/RAND_MAX;
+        float z = (float)rand()/RAND_MAX;
+        glm::vec3 velocity = glm::vec3(x,y,z);
+        glm::vec3 position = origin;
+        particles.push_back(new Particle(position,velocity, PARTICLE_LIFE));
         position_data.push_back(position);
     }
     
     // Set the model matrix to an identity matrix.
     model = glm::mat4(1);
     
+    this->disappear = disappear;
+    this->life = life;
+    
     // Set the color.
     color = glm::vec3(1, 0, 0);
+    if (disappear){
+        color = glm::vec3(1, 0, 0);
+    }
 
     // Generate a Vertex Array (VAO) and Vertex Buffer Object (VBO)
     glGenVertexArrays(1, &VAO);
@@ -45,14 +56,53 @@ ParticleSystem::~ParticleSystem(){
     glDeleteVertexArrays(1, &VAO);
 }
 
-void ParticleSystem::update(float deltaTime){
+void ParticleSystem::update(float deltaTime, glm::vec3 origin){
     // Update particle position
-    for (int i = 0; i < MAX_PARTICLES; i++){
-        position_data[i] = particles[i]->update(deltaTime);
+    if (!disappear){
+        for (int i = 0; i < MAX_PARTICLES; i++){
+            position_data[i] = particles[i]->update(deltaTime);
+        }
+        
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * position_data.size(), position_data.data());
+        // Unbind the VBO
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    } else {
+        life -= deltaTime;
+        cout << "vanish PS life is " << life << endl;
+        if (life < 0){
+            cout << "vanish PS life goes below zero!!!" << endl;
+            particles.clear();
+            position_data.clear();
+            
+            for (int i = 0; i < MAX_PARTICLES; i++){
+                float x = (float)rand()/RAND_MAX;
+                float y = (float)rand()/RAND_MAX;
+                float z = (float)rand()/RAND_MAX;
+                glm::vec3 velocity = glm::vec3(x,y,z);
+                glm::vec3 position = origin;
+                cout << "vanish particle position is " << glm::to_string(position) << endl;
+                Particle * vanishParticle =new Particle(position,velocity, PARTICLE_LIFE);
+                particles.push_back(vanishParticle);
+                position_data.push_back(position);
+            }
+            for (int i = 0; i < MAX_PARTICLES; i++){
+                position_data[i] = particles[i]->update(deltaTime);
+            }
+            
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * position_data.size(), position_data.data());
+            // Unbind the VBO
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
     }
 }
 
 void ParticleSystem::draw(const glm::mat4& view, const glm::mat4& projection, GLuint shader){
+    if (disappear){
+        cout << "drawing vanish particle system!!!" << endl;
+    }
+    
     // Actiavte the shader program
     glUseProgram(shader);
 
@@ -66,7 +116,7 @@ void ParticleSystem::draw(const glm::mat4& view, const glm::mat4& projection, GL
     glBindVertexArray(VAO);
 
     // Set point size
-    glPointSize(10.0f);
+    glPointSize(3.0f);
 
     // Draw the points
     glDrawArrays(GL_POINTS, 0, position_data.size());

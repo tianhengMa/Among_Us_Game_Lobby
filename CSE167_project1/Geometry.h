@@ -49,14 +49,14 @@ public:
     void ballRotate(glm::vec3 rotAxis, float rotAngle);
     void adjust_sphere(float radius_scale, glm::vec3 center_translate);
     void translate(glm::vec3 translation);
-    void rotate(float direction);
+    void rotate(float direction, float degrees);
     
     BoundingSphere * sphere;
     glm::vec3 lookAt; // facing direction
     
-    // Bounding Sphere
-    //glm::vec3 sphere_center;
-    //float sphere_radius;
+    // update for astronauts
+    float life;
+    float freezeTime;
 
 
 };

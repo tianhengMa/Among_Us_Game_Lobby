@@ -11,14 +11,15 @@
 #include <stdio.h>
 #include "shader.h"
 #include "Object.h"
+#include "BoundingObj.h"
 
-class BoundingPlane{
+class BoundingPlane: public BoundingObj {
 private:
 
     
 public:
     BoundingPlane(glm::vec3 point, glm::vec3 normal);
-    //bool notTouching(BoundingPlane * other);
+    bool notTouching(BoundingObj * obj, int type);
     //BoundingPlane * simTranslate(glm::vec3 translation);
     
     glm::vec3 point;

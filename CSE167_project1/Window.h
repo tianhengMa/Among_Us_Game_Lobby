@@ -39,12 +39,15 @@ public:
     //static Transform * seat2wheel;
     
     static Geometry * lobby;
+    static vector<Geometry *> astrnts;
     static Geometry * astrnt_rd;
     //static Geometry * support;
     //static Geometry * leg;
     //static Geometry * seat;
     
     // Box bounding sphere & wall bounding planes
+    static vector<BoundingObj*> boundingObjs;
+    
     static BoundingSphere * leftBoxSphere;
     static BoundingSphere * rightBoxSphere;
     
@@ -109,11 +112,18 @@ public:
     static double startPosY;
     
     // Check Collisons
-    static bool notTouchingAnything(BoundingSphere * sphere, glm::vec3 translation);
+    static bool notTouchingAnything(BoundingSphere * sphere, glm::vec3 translation, int thisBoundingIndex);
+    static int checkTouchingIndex(BoundingSphere * sphere, glm::vec3 translation, int thisBoundingIndex);
     
     // Particle system
-    static ParticleSystem * particleSystem;
-
+    static vector<ParticleSystem *> particleSystems;
+    static vector<ParticleSystem *> vanishParticleSystems;
+    static double prev_time;
+    
+    // Move astronaut
+    static void moveAstrnt(Geometry * astrnt, float steps, bool isPlayer);
+    static void rotateAstrnt(Geometry * astrnt, float direction, float degrees);
+    static void updateAstrnt(Geometry * astrnt, float deltaTime);
 };
 
 #endif

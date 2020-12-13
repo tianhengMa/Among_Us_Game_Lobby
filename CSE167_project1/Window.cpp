@@ -24,11 +24,14 @@ Transform * Window::astrnt_rd2world;
 
 Geometry * Window::lobby;
 Geometry * Window::astrnt_rd;
+vector<Geometry *> Window::astrnts;
 /*
 Geometry * Window::leg;
 Geometry * Window::support;
 Geometry * Window::seat;
  */
+vector<BoundingObj*> Window::boundingObjs;
+
 BoundingSphere * Window::leftBoxSphere;
 BoundingSphere * Window::rightBoxSphere;
 
@@ -62,7 +65,9 @@ double Window::startPosX;
 double Window::startPosY;
 
 // Particle System
-ParticleSystem * Window::particleSystem;
+vector<ParticleSystem *> Window::particleSystems;
+vector<ParticleSystem *> Window::vanishParticleSystems;
+double Window::prev_time;
 
 // View Matrix:
 glm::vec3 Window::eyePos(eyePosX, eyePosY, eyePosZ);            // Camera position.
@@ -106,11 +111,7 @@ bool Window::initializeObjects()
     glm::vec3 lightDiffuse = glm::vec3(1,    1,    1);
     glm::vec3 lightSpecular = glm::vec3(0.3,    0.3,    0.3);
     direcLight = new DirecLight(lightDirection, lightAmbient, lightDiffuse, lightSpecular);
-    
-    //cube = new Cube(5.0f);
-    //discoBall = new Sphere();
         
-    
     // Initialize world transform
     glm::mat4 worldModel = glm::mat4(1.0f);
     worldModel = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1,0,0))*worldModel;
@@ -134,21 +135,6 @@ bool Window::initializeObjects()
     cout << "Building Lobby" << endl;
     lobby = new Geometry("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/amongus_lobby.obj",silver, direcLight,0, glm::vec3(1),lobby_sphere);
     
-    // initialize red player
-    float radius = 4.0f;
-    BoundingSphere * rd_sphere = new BoundingSphere(glm::vec3(0.000000, 0.678456, -0.121127), radius);
-    glm::mat4 astrnt_rdModel = glm::mat4(1.0f);
-    //astrnt_rdModel = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1,0,0))*astrnt_rdModel;
-    astrnt_rdModel = glm::scale(glm::mat4(1.0f), glm::vec3(0.1))*astrnt_rdModel;
-    astrnt_rdModel = glm::translate(glm::mat4(1.0f), glm::vec3(0,-1,0))*astrnt_rdModel;
-    astrnt_rd2world = new Transform(astrnt_rdModel);
-  
-    glm::vec3 red = glm::vec3(0.77255, 0.07058 ,0.06667);
-    cout << "Building Astronaut red" << endl;
-    astrnt_rd = new Geometry("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/amongus_astro_still.obj",silver, direcLight,1, red, rd_sphere);
-    astrnt_rd->translate(glm::vec3(0,0,10));
-    particleSystem = new ParticleSystem(astrnt_rd->sphere->center);
-    
     // Initialize box bounding spheres
     float box_radius = 14.0f;
     leftBoxSphere = new BoundingSphere(glm::vec3(-36.500000, 0.678456, 26.878872),box_radius);
@@ -162,12 +148,111 @@ bool Window::initializeObjects()
     leftDiagPlane = new BoundingPlane(glm::vec3(-54.000000, 0.678456, 55.878876), glm::normalize(glm::vec3(1, 0, -1)));
     rightDiagPlane = new BoundingPlane(glm::vec3(58.000000, 0.678456, 53.878876), glm::normalize(glm::vec3(-1, 0, -1)));
     
+    boundingObjs.push_back(topPlane);
+    boundingObjs.push_back(bottomPlane);
+    boundingObjs.push_back(leftPlane);
+    boundingObjs.push_back(rightPlane);
+    boundingObjs.push_back(leftDiagPlane);
+    boundingObjs.push_back(rightDiagPlane);
+    boundingObjs.push_back(leftBoxSphere);
+    boundingObjs.push_back(rightBoxSphere);
+    
+    // initialize astrnt bounding sphere
+    float radius = 4.0f;
+    //BoundingSphere * sphere = new BoundingSphere(glm::vec3(0), radius);
+    //vector<BoundingSphere *> spheres;
+    
+    // initialize astrnt2World transform
+    glm::mat4 astrnt_rdModel = glm::mat4(1.0f);
+    //astrnt_rdModel = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1,0,0))*astrnt_rdModel;
+    astrnt_rdModel = glm::scale(glm::mat4(1.0f), glm::vec3(0.1))*astrnt_rdModel;
+    astrnt_rdModel = glm::translate(glm::mat4(1.0f), glm::vec3(0,-1,0))*astrnt_rdModel;
+    astrnt_rd2world = new Transform(astrnt_rdModel);
+  
+    // initialize colors
+    glm::vec3 red = glm::vec3(0.77255, 0.07058 ,0.06667);
+    glm::vec3 pink = glm::vec3(0.92549, 0.32941, 0.73333);
+    glm::vec3 purple = glm::vec3(0.42352, 0.18431, 0.73725);
+    glm::vec3 white = glm::vec3(0.83921, 0.87450, 0.94509);
+    glm::vec3 blue = glm::vec3(0.07450, 0.18039, 0.81960);
+    glm::vec3 lime = glm::vec3(0.30588, 0.93725, 0.21960);
+    
+    vector<glm::vec3> colors;
+    colors.push_back(red);
+    colors.push_back(pink);
+    colors.push_back(purple);
+    colors.push_back(white);
+    colors.push_back(blue);
+    colors.push_back(lime);
+    
+    // Initialize astronauts
+    int boundingIndex = 0;
+    for (int i = 0; i < colors.size(); i++){
+        cout << "Building Astronaut" << endl;
+        BoundingSphere * sphere = new BoundingSphere(glm::vec3(0), radius);
+        sphere->index = boundingIndex;
+        boundingIndex++;
+        
+        
+        Geometry * astrnt = new Geometry("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/amongus_astro_still.obj",silver, direcLight,1, colors[i], sphere);
+        astrnt->freezeTime = (float)(rand() % 15);
+        astrnt->life = (float)(rand() % 120);
+        
+        astrnts.push_back(astrnt);
+        //boundingObjs.push_back(astrnt->sphere);
+        
+        //int x = rand() % 116 - 55;
+        //int z = rand() % 19 + 22;
+        int x = rand() % 120 - 60;
+        int z = rand() % 20 + 20;
+        BoundingSphere * temp = new BoundingSphere(glm::vec3(x,0,z), radius);
+        while (!notTouchingAnything(temp, glm::vec3(0),sphere->index)){
+            x = rand() % 120 - 60;
+            z = rand() % 20 + 20;
+            temp = new BoundingSphere(glm::vec3(x,0,z), radius);
+        }
+         
+        astrnt->translate(glm::vec3(x,0,z));
+        cout << "moved to " << x << " 0 " << z << endl;
+        cout << "center now is <" << astrnt->sphere->center.x << " " << astrnt->sphere->center.y << " " << astrnt->sphere->center.z << "> " << endl;
+    
+        boundingObjs.push_back(astrnt->sphere);
+        
+        float randDegrees = rand() % 360;
+        rotateAstrnt(astrnt, 1.0f, randDegrees);
+        
+        glm::mat4 particleModel = worldModel*astrnt_rdModel;
+        ParticleSystem * particleSystem = new ParticleSystem(astrnt->sphere->center, false, astrnt->life);
+        particleSystem->model = particleModel;
+        
+        ParticleSystem * vanishParticleSystem = new ParticleSystem(astrnt->sphere->center, true, astrnt->life);
+        vanishParticleSystem->model = particleModel;
+        
+        particleSystems.push_back(particleSystem);
+        vanishParticleSystems.push_back(vanishParticleSystem);
+        
+    }
+
+    prev_time = glfwGetTime();
+    
+    // Spawn location
+    // top left: glm::vec3(-57.239986, 0.000000, 4.946969)
+    // top right: glm::vec3(60.407051, 0.000000, 21.372105)
+    // bottom left: glm::vec3(-55.371868, 0.000000, 48.461803)
+    // bottom right: glm::vec3(62.082653, 0.000000, 43.620754)
+    // max x = 60, min x = -55
+    // max z = 40, min z = 22
+    
+    
     // Assign Children
     world->addChild(lobby);
     world->addChild(astrnt_rd2world);
-    astrnt_rd2world->addChild(astrnt_rd);
+    for (int i = 0; i < astrnts.size(); i++){
+            astrnt_rd2world->addChild(astrnts[i]);
+    }
+    //astrnt_rd2world->addChild(astrnt_rd);
     
-    glfwSetTime(0);
+    //glfwSetTime(0);
 
     
     // Set cube to be the first to display
@@ -264,9 +349,22 @@ void Window::resizeCallback(GLFWwindow* window, int width, int height)
 void Window::idleCallback()
 {
     // Perform any necessary updates here
-    double time = glfwGetTime();
-    particleSystem->update(time);
+    double deltaTime = glfwGetTime() - prev_time;
+    prev_time = glfwGetTime();
     
+    for (int i = 1; i < astrnts.size(); i++){
+        updateAstrnt(astrnts[i], 5*deltaTime);
+        cout << "astrnt center is " << glm::to_string(astrnts[i]->sphere->center) << endl;
+    }
+    
+    for (int i = 0; i < particleSystems.size(); i++){
+        particleSystems[i]->update(deltaTime, astrnts[i]->sphere->center);
+    }
+    
+    for (int i = 0; i < vanishParticleSystems.size(); i++){
+        vanishParticleSystems[i]->update(deltaTime, astrnts[i]->sphere->center);
+    }
+
 }
 
 void Window::displayCallback(GLFWwindow* window)
@@ -283,7 +381,16 @@ void Window::displayCallback(GLFWwindow* window)
     // Render the scene graph
     world->draw(geometryShader, glm::mat4(1.0f), true, view, projection);
     
-    particleSystem->draw(view, projection, particleShader);
+    //particleSystem->draw(view, projection, particleShader);
+    for (int i = 0; i < particleSystems.size(); i++){
+        particleSystems[i]->draw(view, projection, particleShader);
+    }
+    
+    for (int i = 0; i < vanishParticleSystems.size(); i++){
+        if (vanishParticleSystems[i]->life < 0){
+            vanishParticleSystems[i]->draw(view, projection, particleShader);
+        }
+    }
     
     // Gets events, including input such as keyboard and mouse or window resizing
     glfwPollEvents();
@@ -342,7 +449,7 @@ void Window::cursor_position_callback(GLFWwindow* window, double xpos, double yp
     lookAtPoint = glm::vec3(glm::translate(glm::mat4(1.0f), -eyePos) * glm::vec4(lookAtPoint,1.0f));
     view = glm::lookAt(Window::eyePos, Window::lookAtPoint, Window::upVector);
     */
-    //leftLeg->ballRotate(rotAxis, -rotAngle);
+    //lobby->ballRotate(rotAxis, -rotAngle);
     //wheel->ballRotate(rotAxis, -rotAngle);
     
     
@@ -366,15 +473,95 @@ glm::vec3 Window::trackBallMapping(double pointX, double pointY){
     return vec;
 }
 
-bool Window::notTouchingAnything(BoundingSphere * sphere, glm::vec3 translation){
-    return (sphere->simTranslate(translation)->notTouching(leftBoxSphere)
-            && sphere->simTranslate(translation)->notTouching(rightBoxSphere)
-            && sphere->simTranslate(translation)->notTouching(topPlane)
-            && sphere->simTranslate(translation)->notTouching(bottomPlane)
-            && sphere->simTranslate(translation)->notTouching(leftPlane)
-            && sphere->simTranslate(translation)->notTouching(rightPlane)
-            && sphere->simTranslate(translation)->notTouching(leftDiagPlane)
-            && sphere->simTranslate(translation)->notTouching(rightDiagPlane));
+bool Window::notTouchingAnything(BoundingSphere * sphere, glm::vec3 translation, int thisBoundingIndex){
+    for (int i = 0; i < boundingObjs.size(); i++){
+        // checking bounding planes
+        if (i < 6){
+            if (!sphere->simTranslate(translation)->notTouching(boundingObjs[i], 1)){
+                //cout << "Touching something!! i is " << i << endl;
+                return false;
+            }
+        }
+        // checking bounding sphere
+        else {
+            if ((i-8) != thisBoundingIndex && !sphere->simTranslate(translation)->notTouching(boundingObjs[i], 0)){
+                //cout << "Touching something!! i is " << i << endl;
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+int Window::checkTouchingIndex(BoundingSphere * sphere, glm::vec3 translation, int thisBoundingIndex){
+    for (int i = 0; i < boundingObjs.size(); i++){
+        // checking bounding planes
+        if (i < 6){
+            if (!sphere->simTranslate(translation)->notTouching(boundingObjs[i], 1)){
+                //cout << "Touching something!! i is " << i << endl;
+                return i;
+            }
+        }
+        // checking bounding sphere
+        else {
+            if ((i-8) != thisBoundingIndex && !sphere->simTranslate(translation)->notTouching(boundingObjs[i], 0)){
+                //cout << "Touching something!! i is " << i << endl;
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
+void Window::moveAstrnt(Geometry * astrnt, float steps, bool isPlayer){
+    glm::vec3 translation = (astrnt->lookAt) * steps ;
+    if (notTouchingAnything(astrnt->sphere, translation, astrnt->sphere->index)){
+        astrnt->translate(translation);
+    }
+    
+    if (!isPlayer){
+        // For non-player characters, when touching anything, rotate automatically
+        if (!notTouchingAnything(astrnt->sphere, translation, astrnt->sphere->index)){
+            int touchIndex = checkTouchingIndex(astrnt->sphere, translation, astrnt->sphere->index);
+            glm::vec3 lookAt = glm::normalize(astrnt->lookAt);
+            glm::vec3 normal = glm::vec3(0);
+            // If touching bounding plane
+            if (touchIndex < 6){
+                BoundingPlane * touchingPlane = (BoundingPlane *)boundingObjs[touchIndex];
+                normal = glm::normalize(touchingPlane->normal);
+            } else {
+                BoundingSphere * touchingSphere = (BoundingSphere *)boundingObjs[touchIndex];
+                normal = glm::normalize(astrnt->sphere->center - touchingSphere->center);
+            }
+                
+            float pos2normal = glm::acos(glm::dot(normal, lookAt) / (glm::length(normal) * glm::length(lookAt)) );
+            float neg2normal = glm::acos(glm::dot(normal, lookAt* (-1.0f)) / (glm::length(normal) * glm::length(lookAt)) );
+            float rotation = glm::degrees(pos2normal - neg2normal);
+            //cout << "rotation is " << rotation << endl;
+            
+            glm::vec3 crossProduct = glm::cross(lookAt, normal);
+            if (crossProduct.y < 0){
+                rotateAstrnt(astrnt, -1, rotation);
+            } else {
+                rotateAstrnt(astrnt, 1, rotation);
+            }
+        }
+    }
+}
+
+void Window::rotateAstrnt(Geometry * astrnt, float direction, float degrees){
+    glm::vec3 translation = astrnt->sphere->center;
+    astrnt->translate(-translation);
+    astrnt->rotate(direction, degrees);
+    astrnt->translate(translation);
+}
+
+void Window::updateAstrnt(Geometry * astrnt, float deltaTime){
+    astrnt->life -= deltaTime;
+    astrnt->freezeTime -= deltaTime;
+    if (astrnt->life > 0 && astrnt->freezeTime < 0){
+        moveAstrnt(astrnt, deltaTime, false);
+    }
 }
 
 void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -383,7 +570,6 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
      * TODO: Modify below to add your key callbacks.
      */
     
-    BoundingSphere * sphere = astrnt_rd->sphere;
     // Check for a key press.
     if (action == GLFW_PRESS)
     {
@@ -396,34 +582,30 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
             
             // Move Forwards
             case GLFW_KEY_UP:{
-                glm::vec3 translation = astrnt_rd->lookAt;
-                if (notTouchingAnything(sphere, translation)){
-                    astrnt_rd->translate(translation);
-                }
-                break;
-            }
-            // Move Backwards
-            case GLFW_KEY_DOWN:{
-                glm::vec3 translation = -1.0f* astrnt_rd->lookAt;
-                if (notTouchingAnything(sphere, translation)){
-                    astrnt_rd->translate(translation);
-                }
+                moveAstrnt(astrnts[0], 1, true);
+                //cout << "center is: " << glm::to_string(sphere->center) << std::endl;
                 break;
             }
             // Rotate Left
             case GLFW_KEY_LEFT:{
+                rotateAstrnt(astrnts[0], 1.0f, 10.0f);
+                /*
                 glm::vec3 translation = sphere->center;
-                astrnt_rd->translate(-translation);
-                astrnt_rd->rotate(1.0f);
-                astrnt_rd->translate(translation);
+                astrnts[0]->translate(-translation);
+                astrnts[0]->rotate(1.0f);
+                astrnts[0]->translate(translation);
+                 */
                 break;
             }
             // Rotate right
             case GLFW_KEY_RIGHT:{
+                rotateAstrnt(astrnts[0], -1.0f, 10.0f);
+                /*
                 glm::vec3 translation = sphere->center;
-                astrnt_rd->translate(-translation);
-                astrnt_rd->rotate(-1.0f);
-                astrnt_rd->translate(translation);
+                astrnts[0]->translate(-translation);
+                astrnts[0]->rotate(-1.0f);
+                astrnts[0]->translate(translation);
+                 */
                 break;
             }
             // Move In

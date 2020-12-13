@@ -111,6 +111,7 @@
 		0C7C5DC72581F0DB004A91C6 /* ParticleSystem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ParticleSystem.h; sourceTree = "<group>"; };
 		0C7C5DC925829B51004A91C6 /* Particle.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Particle.cpp; sourceTree = "<group>"; };
 		0C7C5DCA25829B52004A91C6 /* Particle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Particle.h; sourceTree = "<group>"; };
+		0C7C5DCC258300BE004A91C6 /* BoundingObj.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BoundingObj.h; sourceTree = "<group>"; };
 		0CBAC5DE252B9D49004CFA27 /* shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; path = shaders; sourceTree = "<group>"; };
 		0CBAC5E0252BA202004CFA27 /* bear.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = bear.obj; sourceTree = "<group>"; };
 		0CBAC5E1252BA257004CFA27 /* SandalF20.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SandalF20.obj; sourceTree = "<group>"; };
@@ -192,6 +193,7 @@
 				0C7C5DC72581F0DB004A91C6 /* ParticleSystem.h */,
 				0C7C5DC925829B51004A91C6 /* Particle.cpp */,
 				0C7C5DCA25829B52004A91C6 /* Particle.h */,
+				0C7C5DCC258300BE004A91C6 /* BoundingObj.h */,
 			);
 			path = CSE167_project1;
 			sourceTree = "<group>";
