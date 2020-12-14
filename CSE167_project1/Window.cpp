@@ -15,12 +15,6 @@ DirecLight * Window::direcLight;;
 //Scene graph components
 Transform * Window::world;
 Transform * Window::astrnt_rd2world;
-/*
-Transform * Window::leg2world;
-Transform * Window::support2world;
-Transform * Window::wheel2support;
-Transform * Window::astrnt_rd2world;
- */
 
 Geometry * Window::lobby;
 Geometry * Window::astrnt_rd;
@@ -119,12 +113,6 @@ bool Window::initializeObjects()
     //worldModel = glm::translate(glm::mat4(1.0f), glm::vec3(0,-5,0))*worldModel;
     world = new Transform(worldModel);
     
-    /* //brass
-    glm::vec3 ambient = glm::vec3(0.329412,    0.223529,    0.027451);
-    glm::vec3 diffuse = glm::vec3(0.780392,    0.568627,    0.113725);
-    glm::vec3 specular = glm::vec3(0.992157,    0.941176,    0.807843);
-    float shininess = 0.21794872;
-     */
     // Initialize lobby
     BoundingSphere * lobby_sphere = new BoundingSphere(glm::vec3(-0.516571, 6.330648, 4.394818), 25.2175f);
     glm::vec3 ambient = glm::vec3(0.25,    0.20725,    0.20725);
@@ -195,8 +183,17 @@ bool Window::initializeObjects()
         
         
         Geometry * astrnt = new Geometry("/Users/tma2017/Senior/Q1/CSE167/project/CSE167_project1/CSE167_project1/amongus_astro_still.obj",silver, direcLight,1, colors[i], sphere);
-        astrnt->freezeTime = (float)(rand() % 15);
-        astrnt->life = (float)(rand() % 120);
+        float life = (float)(rand() % 240) + 15;
+        float freezeTime = (float)(rand() % 20) + 3 ;
+        float snoozeTime = (float)(rand() % 150) + 10;
+        astrnt->freezeTime = freezeTime;
+        astrnt->life = life;
+        astrnt->snoozeTime = snoozeTime;
+        
+        if (i == 0){
+            astrnt->life = 1000000;
+            astrnt->snoozeTime = 1000000;
+        }
         
         astrnts.push_back(astrnt);
         //boundingObjs.push_back(astrnt->sphere);
@@ -222,10 +219,10 @@ bool Window::initializeObjects()
         rotateAstrnt(astrnt, 1.0f, randDegrees);
         
         glm::mat4 particleModel = worldModel*astrnt_rdModel;
-        ParticleSystem * particleSystem = new ParticleSystem(astrnt->sphere->center, false, astrnt->life);
+        ParticleSystem * particleSystem = new ParticleSystem(astrnt->sphere->center, false, life);
         particleSystem->model = particleModel;
         
-        ParticleSystem * vanishParticleSystem = new ParticleSystem(astrnt->sphere->center, true, astrnt->life);
+        ParticleSystem * vanishParticleSystem = new ParticleSystem(astrnt->sphere->center, true, life);
         vanishParticleSystem->model = particleModel;
         
         particleSystems.push_back(particleSystem);
@@ -250,13 +247,6 @@ bool Window::initializeObjects()
     for (int i = 0; i < astrnts.size(); i++){
             astrnt_rd2world->addChild(astrnts[i]);
     }
-    //astrnt_rd2world->addChild(astrnt_rd);
-    
-    //glfwSetTime(0);
-
-    
-    // Set cube to be the first to display
-    //currObj = cube;
 
     return true;
 }
@@ -354,7 +344,6 @@ void Window::idleCallback()
     
     for (int i = 1; i < astrnts.size(); i++){
         updateAstrnt(astrnts[i], 5*deltaTime);
-        cout << "astrnt center is " << glm::to_string(astrnts[i]->sphere->center) << endl;
     }
     
     for (int i = 0; i < particleSystems.size(); i++){
@@ -387,9 +376,7 @@ void Window::displayCallback(GLFWwindow* window)
     }
     
     for (int i = 0; i < vanishParticleSystems.size(); i++){
-        if (vanishParticleSystems[i]->life < 0){
-            vanishParticleSystems[i]->draw(view, projection, particleShader);
-        }
+        vanishParticleSystems[i]->draw(view, projection, particleShader);
     }
     
     // Gets events, including input such as keyboard and mouse or window resizing
@@ -417,10 +404,6 @@ void Window::cursor_position_callback(GLFWwindow* window, double xpos, double yp
     
     glm::vec3 startPoint = trackBallMapping(startPosX, startPosY);
     glm::vec3 nextPoint = trackBallMapping(xpos, ypos);
-    
-    //cout << "start point is (" << startPosX << ", " << startPosY  << ") " << endl;
-    //cout << "next point is (" << xpos << ", " << ypos << ") " << endl;
-    //cout << endl;
 
     glm::vec3 direction = nextPoint - startPoint;
     float velocity = glm::length(direction);
@@ -478,14 +461,12 @@ bool Window::notTouchingAnything(BoundingSphere * sphere, glm::vec3 translation,
         // checking bounding planes
         if (i < 6){
             if (!sphere->simTranslate(translation)->notTouching(boundingObjs[i], 1)){
-                //cout << "Touching something!! i is " << i << endl;
                 return false;
             }
         }
         // checking bounding sphere
         else {
             if ((i-8) != thisBoundingIndex && !sphere->simTranslate(translation)->notTouching(boundingObjs[i], 0)){
-                //cout << "Touching something!! i is " << i << endl;
                 return false;
             }
         }
@@ -498,14 +479,12 @@ int Window::checkTouchingIndex(BoundingSphere * sphere, glm::vec3 translation, i
         // checking bounding planes
         if (i < 6){
             if (!sphere->simTranslate(translation)->notTouching(boundingObjs[i], 1)){
-                //cout << "Touching something!! i is " << i << endl;
                 return i;
             }
         }
         // checking bounding sphere
         else {
             if ((i-8) != thisBoundingIndex && !sphere->simTranslate(translation)->notTouching(boundingObjs[i], 0)){
-                //cout << "Touching something!! i is " << i << endl;
                 return i;
             }
         }
@@ -537,7 +516,6 @@ void Window::moveAstrnt(Geometry * astrnt, float steps, bool isPlayer){
             float pos2normal = glm::acos(glm::dot(normal, lookAt) / (glm::length(normal) * glm::length(lookAt)) );
             float neg2normal = glm::acos(glm::dot(normal, lookAt* (-1.0f)) / (glm::length(normal) * glm::length(lookAt)) );
             float rotation = glm::degrees(pos2normal - neg2normal);
-            //cout << "rotation is " << rotation << endl;
             
             glm::vec3 crossProduct = glm::cross(lookAt, normal);
             if (crossProduct.y < 0){
@@ -560,7 +538,14 @@ void Window::updateAstrnt(Geometry * astrnt, float deltaTime){
     astrnt->life -= deltaTime;
     astrnt->freezeTime -= deltaTime;
     if (astrnt->life > 0 && astrnt->freezeTime < 0){
-        moveAstrnt(astrnt, deltaTime, false);
+        if (glm::abs(astrnt->life-astrnt->snoozeTime) < astrnt->freezeTime ){
+            moveAstrnt(astrnt,0, false);
+        } else {
+            moveAstrnt(astrnt, 5*deltaTime, false);
+        }
+    }
+    else if (astrnt->life < 0){
+        astrnt->translate(glm::vec3(-1000,-1000,-1000));
     }
 }
 
@@ -582,30 +567,18 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
             
             // Move Forwards
             case GLFW_KEY_UP:{
-                moveAstrnt(astrnts[0], 1, true);
+                moveAstrnt(astrnts[0], 5, true);
                 //cout << "center is: " << glm::to_string(sphere->center) << std::endl;
                 break;
             }
             // Rotate Left
             case GLFW_KEY_LEFT:{
                 rotateAstrnt(astrnts[0], 1.0f, 10.0f);
-                /*
-                glm::vec3 translation = sphere->center;
-                astrnts[0]->translate(-translation);
-                astrnts[0]->rotate(1.0f);
-                astrnts[0]->translate(translation);
-                 */
                 break;
             }
             // Rotate right
             case GLFW_KEY_RIGHT:{
                 rotateAstrnt(astrnts[0], -1.0f, 10.0f);
-                /*
-                glm::vec3 translation = sphere->center;
-                astrnts[0]->translate(-translation);
-                astrnts[0]->rotate(-1.0f);
-                astrnts[0]->translate(translation);
-                 */
                 break;
             }
             // Move In
@@ -626,25 +599,6 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
                 view = glm::lookAt(Window::eyePos, Window::lookAtPoint, Window::upVector);
                 break;
             }
-                /*
-            // Rotate Left
-            case GLFW_KEY_A:
-                //cout << "LookAt point before is " << glm::to_string(lookAtPoint) << endl;
-                lookAtPoint = glm::vec3(glm::translate(glm::mat4(1.0f), -eyePos) * glm::vec4(lookAtPoint,1.0f));
-                lookAtPoint = glm::rotate(lookAtPoint, glm::radians(5.0f), glm::vec3(0,1,0));
-                lookAtPoint = glm::vec3(glm::translate(glm::mat4(1.0f), eyePos) * glm::vec4(lookAtPoint,1.0f));
-                //cout << "LookAt point after is " << glm::to_string(lookAtPoint) << endl;
-                view = glm::lookAt(Window::eyePos, Window::lookAtPoint, Window::upVector);
-                break;
-            // Rotate Right
-            case GLFW_KEY_D:
-                //cout << "LookAt point is " << glm::to_string(lookAtPoint) << endl;
-                lookAtPoint = glm::vec3(glm::translate(glm::mat4(1.0f), -eyePos) * glm::vec4(lookAtPoint,1.0f));
-                lookAtPoint = glm::rotate(lookAtPoint, -glm::radians(5.0f), glm::vec3(0,1,0));
-                lookAtPoint = glm::vec3(glm::translate(glm::mat4(1.0f), eyePos) * glm::vec4(lookAtPoint,1.0f));
-                view = glm::lookAt(Window::eyePos, Window::lookAtPoint, Window::upVector);
-                break;
-                */
                 
             default:
                 break;

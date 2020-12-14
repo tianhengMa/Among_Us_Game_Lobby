@@ -28,7 +28,7 @@ ParticleSystem::ParticleSystem(glm::vec3 origin, bool disappear, float life){
     // Set the color.
     color = glm::vec3(1, 0, 0);
     if (disappear){
-        color = glm::vec3(1, 0, 0);
+        color = glm::vec3(1, 1, 1);
     }
 
     // Generate a Vertex Array (VAO) and Vertex Buffer Object (VBO)
@@ -58,17 +58,30 @@ ParticleSystem::~ParticleSystem(){
 
 void ParticleSystem::update(float deltaTime, glm::vec3 origin){
     // Update particle position
-    if (!disappear){
-        for (int i = 0; i < MAX_PARTICLES; i++){
-            position_data[i] = particles[i]->update(deltaTime);
+    //if (!disappear){
+        life -= deltaTime;
+        if (disappear && life < 0){
+                for (int i = 0; i < MAX_PARTICLES; i++){
+                    position_data[i] = particles[i]->update(deltaTime);
+                }
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * position_data.size(), position_data.data());
+            // Unbind the VBO
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+                
+        } else {
+            for (int i = 0; i < MAX_PARTICLES; i++){
+                position_data[i] = particles[i]->update(deltaTime);
+            }
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * position_data.size(), position_data.data());
+            // Unbind the VBO
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
         
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * position_data.size(), position_data.data());
-        // Unbind the VBO
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    /*
     } else {
-        life -= deltaTime;
+        
         cout << "vanish PS life is " << life << endl;
         if (life < 0){
             cout << "vanish PS life goes below zero!!!" << endl;
@@ -95,13 +108,10 @@ void ParticleSystem::update(float deltaTime, glm::vec3 origin){
             // Unbind the VBO
             glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
-    }
+    }*/
 }
 
 void ParticleSystem::draw(const glm::mat4& view, const glm::mat4& projection, GLuint shader){
-    if (disappear){
-        cout << "drawing vanish particle system!!!" << endl;
-    }
     
     // Actiavte the shader program
     glUseProgram(shader);
@@ -116,7 +126,7 @@ void ParticleSystem::draw(const glm::mat4& view, const glm::mat4& projection, GL
     glBindVertexArray(VAO);
 
     // Set point size
-    glPointSize(3.0f);
+    glPointSize(2.0f);
 
     // Draw the points
     glDrawArrays(GL_POINTS, 0, position_data.size());

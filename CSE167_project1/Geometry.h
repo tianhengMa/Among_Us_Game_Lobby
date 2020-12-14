@@ -57,6 +57,7 @@ public:
     // update for astronauts
     float life;
     float freezeTime;
+    float snoozeTime;
 
 
 };

@@ -18,7 +18,7 @@
 class ParticleSystem {
 private:
     
-    static const int MAX_PARTICLES = 100;
+    static const int MAX_PARTICLES = 150;
     static const int PARTICLE_LIFE = 3;
     
     GLuint VAO, VBO;
